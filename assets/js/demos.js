@@ -88,7 +88,7 @@ function initJourney() {
   $('#jy-2 .jy__chips').addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b) return; press(b.parentElement, b);
     const [bf, af] = BA[+b.dataset.ba];
-    $('#ba-before').src = `assets/img/${bf}.jpg`; $('#ba-after').src = `assets/img/${af}.jpg`;
+    $('#ba-before').src = `assets/img/${bf}.webp`; $('#ba-after').src = `assets/img/${af}.webp`;
     if (!reduced && window.gsap) gsap.fromTo(range, { value: 85 }, { value: 50, duration: 1.2, ease: 'power3.inOut', onUpdate: () => ba.style.setProperty('--x', range.value + '%') });
   });
 
@@ -119,7 +119,7 @@ function initJourney() {
       $$('button', grid).forEach((x) => x.classList.toggle('is-on', x === b));
       const q = p || ['', 'living-calm', 'تفاعل', 'يوم للرد والتفاعل', 'اليوم مخصص للرد على التعليقات والرسائل وجمع محتوى العملاء.'];
       const imgEl = $('#cal-img'); imgEl.style.opacity = 0;
-      setTimeout(() => { imgEl.src = `assets/img/${q[1]}.jpg`; imgEl.style.opacity = 1; }, 200);
+      setTimeout(() => { imgEl.src = `assets/img/${q[1]}.webp`; imgEl.style.opacity = 1; }, 200);
       $('#cal-type').textContent = q[2]; $('#cal-over').textContent = q[3];
       $('#cal-cap').innerHTML = '<b>dar.living</b> ' + q[4];
     });
@@ -142,7 +142,7 @@ function initJourney() {
   };
   const renderAd = () => {
     const a = AUD[aud], g = GOAL[goal];
-    const imgEl = $('#ad-img'); imgEl.style.opacity = 0; setTimeout(() => { imgEl.src = `assets/img/${a.img}.jpg`; imgEl.style.opacity = 1; }, 180);
+    const imgEl = $('#ad-img'); imgEl.style.opacity = 0; setTimeout(() => { imgEl.src = `assets/img/${a.img}.webp`; imgEl.style.opacity = 1; }, 180);
     $('#ad-over').textContent = a.over; $('#ad-cap').textContent = a.cap; $('#ad-cta').textContent = g[0];
     const cpl = a.cpl * g[1];
     tween($('#ad-reach'), a.reach); tween($('#ad-cpl'), cpl, ' ر.س'); tween($('#ad-res'), 3000 / cpl);
@@ -201,7 +201,7 @@ function initJourney() {
 
 /* ============ explainer film ============ */
 const CAPTIONS = [
-  'معرضك عنده قطع رائعة… لكن الحساب صامت.',
+  'معرضك عنده قطع رائعة… لكن الحساب صامت، ومحدش بيسأل.',
   'أول خطوة: ندرس سوقك ومنافسيك في الخليج، ونعرف أين الفجوة.',
   'نحوّل صور الجوال إلى مشاهد واقعية بالذكاء الاصطناعي.',
   'إعلانات تصل لمن يجهّز بيته الآن، لا لكل الناس.',
@@ -222,39 +222,59 @@ function initFilm() {
     build(at, s);
     if (i < scenes.length - 1) tl.to(s, { opacity: 0, duration: .5 }, at + DUR - .5).set(s, { autoAlpha: 0 }, at + DUR);
   };
+  // shared cinematic moves: slow Ken Burns on the photo + headline rising in
+  const cine = (at, s) => {
+    const bg = $('.fs__bg img', s); if (bg) tl.fromTo(bg, { scale: 1.18, xPercent: 2 }, { scale: 1.02, xPercent: -2, duration: DUR, ease: 'none' }, at);
+    tl.from($('.fs__hd span', s), { y: 16, opacity: 0, duration: .5, ease: 'power3.out' }, at + .15)
+      .from($('.fs__hd b', s), { y: 40, opacity: 0, filter: 'blur(8px)', duration: .9, ease: 'power3.out' }, at + .3);
+  };
+  const count = (b, at, d = 2.2) => { const o = { v: 0 }; tl.to(o, { v: +b.dataset.to, duration: d, ease: 'power2.out', onUpdate: () => { b.textContent = fmt(o.v); } }, at); };
   scene(0, (at, s) => {
-    tl.from($('.fs1__phone', s), { y: 60, rotate: -6, opacity: 0, duration: 1, ease: 'power3.out' }, at + .2)
-      .from($$('.fs1__grid img', s), { scale: 0, opacity: 0, stagger: .08, duration: .4 }, at + .8)
-      .from($$('.fs1__zzz span', s), { y: 20, opacity: 0, stagger: .35, duration: .6, repeat: 2, yoyo: true }, at + 2);
+    cine(at, s);
+    tl.from($('.fs1__card', s), { y: 60, rotate: -4, opacity: 0, duration: 1, ease: 'power3.out' }, at + .8)
+      .from($$('.fs1__grid img', s), { scale: .6, opacity: 0, stagger: .1, duration: .4 }, at + 1.4)
+      .from($('.fs1__last', s), { x: 20, opacity: 0, duration: .5 }, at + 2.4)
+      .from($('.fs1__dm', s), { y: 30, scale: .8, opacity: 0, duration: .6, ease: 'back.out(2)' }, at + 3.2)
+      .to($('.fs1__dm', s), { y: -6, duration: .6, yoyo: true, repeat: 4, ease: 'sine.inOut' }, at + 3.8);
   });
   scene(1, (at, s) => {
-    tl.fromTo($('.fs2__land', s), { strokeDashoffset: 900 }, { strokeDashoffset: 0, duration: 2, ease: 'power2.inOut' }, at + .2)
-      .from($$('.fs2__pins g', s), { scale: 0, opacity: 0, transformOrigin: 'center', stagger: .2, duration: .5, ease: 'back.out(2)' }, at + 1)
-      .from($$('.fs2__card', s), { x: -40, opacity: 0, stagger: .5, duration: .6, ease: 'power3.out' }, at + 2.6);
+    cine(at, s);
+    tl.from($('.fs2__radar', s), { scale: .4, opacity: 0, duration: .9, ease: 'back.out(1.4)' }, at + .6)
+      .from($$('.fs2__radar b', s), { scale: 0, stagger: .3, duration: .4, ease: 'back.out(3)' }, at + 1.2)
+      .from($$('.fs2__cities span', s), { y: 10, opacity: 0, stagger: .08, duration: .3 }, at + 1.6)
+      .from($$('.fs2__card', s), { x: 50, opacity: 0, stagger: .45, duration: .6, ease: 'power3.out' }, at + 2.2);
   });
   scene(2, (at, s) => {
-    tl.from($('.fs3__wrap', s), { scale: .85, opacity: 0, duration: .8, ease: 'power3.out' }, at + .2)
-      .fromTo($('.fs3__after', s), { clipPath: 'inset(0 0 0 100%)' }, { clipPath: 'inset(0 0 0 0%)', duration: 2.6, ease: 'power2.inOut' }, at + 1.8)
-      .fromTo($('.fs3__scan', s), { left: '100%' }, { left: '0%', duration: 2.6, ease: 'power2.inOut' }, at + 1.8)
-      .to($('.fs3__scan', s), { opacity: 0, duration: .3 }, at + 4.5);
+    tl.from($('.fs3__before img', s), { scale: .8, opacity: 0, duration: .8, ease: 'power3.out' }, at + .1);
+    tl.from($('.fs__hd span', s), { y: 16, opacity: 0, duration: .5 }, at + .2).from($('.fs__hd b', s), { y: 40, opacity: 0, duration: .9, ease: 'power3.out' }, at + .35);
+    tl.fromTo($('.fs3__after', s), { clipPath: 'inset(0 0 0 100%)' }, { clipPath: 'inset(0 0 0 0%)', duration: 2.6, ease: 'power2.inOut' }, at + 2)
+      .fromTo($('.fs3__scan', s), { left: '100%' }, { left: '0%', duration: 2.6, ease: 'power2.inOut' }, at + 2)
+      .to($('.fs3__scan', s), { opacity: 0, duration: .3 }, at + 4.6)
+      .to($('.fs3__tag--b', s), { opacity: 0, duration: .3 }, at + 3.4)
+      .fromTo($('.fs3__tag--a', s), { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: .4 }, at + 4.4)
+      .fromTo($('.fs3__after img', s), { scale: 1 }, { scale: 1.08, duration: 3.5, ease: 'none' }, at + 4.5);
   });
   scene(3, (at, s) => {
-    tl.from($$('.fs4__target i', s), { scale: 0, opacity: 0, stagger: .2, duration: .6, ease: 'back.out(1.6)' }, at + .2)
-      .from($$('.fs4__people span', s), { scale: 0, opacity: 0, stagger: .25, duration: .5, ease: 'back.out(2)' }, at + 1.2)
-      .from($('.fs4__ad', s), { x: 80, rotate: 6, opacity: 0, duration: .8, ease: 'power3.out' }, at + 3)
-      .to($$('.fs4__target i', s), { scale: 1.08, duration: .5, yoyo: true, repeat: 5, stagger: .1 }, at + 3.5);
+    cine(at, s);
+    tl.from($('.fs4__ad', s), { y: 80, rotate: -5, opacity: 0, duration: .9, ease: 'power3.out' }, at + .8)
+      .from($$('.fs4__chips span', s), { scale: 0, opacity: 0, stagger: .25, duration: .5, ease: 'back.out(2)' }, at + 1.8)
+      .from($('.fs4__reach', s), { y: 20, opacity: 0, duration: .5 }, at + 3)
+      .to($('.fs4__adcta', s), { scale: 1.05, duration: .35, yoyo: true, repeat: 3 }, at + 4.2);
+    count($('.fs4__reach b', s), at + 3.1, 2.6);
   });
   scene(4, (at, s) => {
-    tl.from($('.fs5__browser', s), { y: 60, opacity: 0, duration: .8, ease: 'power3.out' }, at + .2)
-      .fromTo($('.fs5__cube', s), { rotateY: 0 }, { rotateY: -360, duration: 6, ease: 'power1.inOut' }, at + 1)
-      .from($$('.fs5__sw i', s), { scale: 0, stagger: .15, duration: .4, ease: 'back.out(2)' }, at + 1.4);
+    cine(at, s);
+    tl.from($('.fs5__browser', s), { y: 60, opacity: 0, duration: .8, ease: 'power3.out' }, at + .6)
+      .fromTo($('.fs5__cube', s), { rotateY: 0 }, { rotateY: -360, duration: 6, ease: 'power1.inOut' }, at + 1.2)
+      .from($$('.fs5__sw i', s), { scale: 0, stagger: .15, duration: .4, ease: 'back.out(2)' }, at + 1.6);
   });
   scene(5, (at, s) => {
-    tl.from($$('.fs6__kpis div', s), { y: 40, opacity: 0, stagger: .2, duration: .6, ease: 'power3.out' }, at + .2);
-    $$('.fs6__kpis b', s).forEach((b) => { const o = { v: 0 }; tl.to(o, { v: +b.dataset.to, duration: 2.2, ease: 'power2.out', onUpdate: () => { b.textContent = fmt(o.v); } }, at + .6); });
-    tl.to($('.fs6__chart path', s), { strokeDashoffset: 0, duration: 2.4, ease: 'power2.inOut' }, at + .8)
-      .set($('.fs6__cta', s), { display: 'inline-flex' }, at + 3)
-      .from($('.fs6__cta', s), { scale: .6, opacity: 0, duration: .6, ease: 'back.out(2)' }, at + 3);
+    cine(at, s);
+    tl.from($$('.fs6__kpis div', s), { y: 40, opacity: 0, stagger: .2, duration: .6, ease: 'power3.out' }, at + .7);
+    $$('.fs6__kpis b', s).forEach((b) => count(b, at + 1));
+    tl.to($('.fs6__chart path', s), { strokeDashoffset: 0, duration: 2.4, ease: 'power2.inOut' }, at + 1)
+      .set($('.fs6__cta', s), { display: 'inline-flex' }, at + 3.2)
+      .from($('.fs6__cta', s), { scale: .6, opacity: 0, duration: .6, ease: 'back.out(2)' }, at + 3.2);
   });
   const total = scenes.length * DUR;
   tl.set({}, {}, total);
@@ -364,7 +384,7 @@ function initBooking() {
       _subject: `حجز اجتماع Magmafy · ${fd.get('biz')} · ${when}`,
       _template: 'table', _captcha: 'false',
       'الاسم': fd.get('name'), 'البريد': fd.get('email'), 'الجوال': fd.get('phone') || '-', 'النشاط': fd.get('biz'),
-      'الموضوع': fd.get('topic'), 'الموعد': when, 'نوع الاجتماع': mtype, _replyto: fd.get('email'),
+      'الموضوع': fd.get('topic'), 'الإضافات': fd.get('addons') || '-', 'الموعد': when, 'نوع الاجتماع': mtype, _replyto: fd.get('email'),
     };
     const btn = $('#book-submit'); btn.disabled = true; btn.textContent = 'جارٍ تأكيد الموعد…';
     let sent = false;
@@ -391,7 +411,99 @@ function initBooking() {
   drawCal(); drawTimes(); updateSel();
 }
 
+/* ============ growth calculator ============ */
+function initCalc() {
+  // [cost per lead, middle-step rate, close rate, middle label]
+  const T = [[35, .3, .05, 'زيارات للمعرض'], [9, .35, .018, 'زيارات للمتجر'], [80, .45, .08, 'عروض أسعار']];
+  let type = 0;
+  const b = $('#calc-b'), v = $('#calc-v');
+  const set = (el, n, suf = '') => {
+    const from = parseFloat(el.textContent.replace(/,/g, '')) || 0;
+    if (!window.gsap || reduced) { el.textContent = fmt(n) + suf; return; }
+    gsap.killTweensOf(el); const o = { x: from };
+    gsap.to(o, { x: n, duration: .5, ease: 'power2.out', onUpdate: () => { el.textContent = fmt(o.x) + suf; } });
+  };
+  function calc() {
+    const [cpl, mid, close, lbl] = T[type];
+    const B = +b.value, V = +v.value;
+    const leads = B / cpl, middle = leads * mid, sales = leads * close, rev = sales * V;
+    $('#calc-b-val').textContent = fmt(B) + ' ر.س'; $('#calc-v-val').textContent = fmt(V) + ' ر.س';
+    $('#calc-mid-l').textContent = lbl;
+    set($('#calc-leads'), leads); set($('#calc-mid'), middle); set($('#calc-sales'), sales); set($('#calc-rev'), rev, ' ر.س');
+    $('#calc-roas').textContent = (rev / B).toFixed(1);
+    const max = Math.max(B, rev);
+    $('#calc-bar-b').style.width = (B / max) * 100 + '%'; $('#calc-bar-r').style.width = (rev / max) * 100 + '%';
+  }
+  b.addEventListener('input', calc); v.addEventListener('input', calc);
+  $('#calc-type').addEventListener('click', (e) => { const x = e.target.closest('button'); if (!x) return; press(x.parentElement, x, 'aria-checked'); type = +x.dataset.t; calc(); });
+  calc();
+}
+
+
+/* ---------- packages: each tier is a room that gets furnished ---------- */
+const PK = [
+  { kick: 'خطوة أولى · مرة واحدة', name: 'دراسة السوق', room: 'المخطط', for: 'لكل من يريد أن يعرف أين يقف قبل أن يصرف على الإعلانات',
+    m: [1, 0, 4, 0],
+    items: ['تحليل 5 إلى 10 منافسين مباشرين', 'مقارنة الأسعار والعروض والتقسيط', 'مراجعة محتواهم وإعلاناتهم النشطة', 'اختبار سرعة ردهم كعميل متخفي', 'خريطة فرص وخطة 90 يومًا'],
+    pins: [[22, 30, 'تحليل المنافسين'], [70, 24, 'مقارنة الأسعار'], [46, 62, 'خطة 90 يومًا']] },
+  { kick: 'شهري', name: 'الانطلاقة', room: 'القطع الأساسية', for: 'لمتاجر ومعارض الأثاث الناشئة',
+    m: [2, 1, 2, 0],
+    items: ['إدارة منصتين', 'خطة محتوى شهرية مرتبطة بالمواسم', 'تصميم منشورات وقصص للمنتجات', 'كتابة الكابشن بلهجة سوقك', 'تقرير شهري مبسّط'],
+    pins: [[30, 58, 'منشورات المنتجات'], [68, 40, 'خطة المواسم'], [50, 22, 'إدارة منصتين']] },
+  { kick: 'شهري', name: 'النمو', room: 'غرفة مكتملة', for: 'لمن يريد مضاعفة الاستفسارات وزيارات المعرض', hot: true,
+    m: [4, 4, 3, 1],
+    items: ['حتى 4 منصات', 'صور وريلز وستوري بالذكاء الاصطناعي', 'إعلانات كتالوج وزيارة معرض وإعادة استهداف', 'صفحة هبوط لكل حملة', 'إدارة الرسائل وتحويلها لمواعيد', 'تحديث تحليل المنافسين كل 3 أشهر'],
+    pins: [[24, 64, 'ريلز AI'], [72, 60, 'إعلانات الكتالوج'], [56, 26, 'صفحات هبوط'], [36, 38, 'رسائل ← مواعيد']] },
+  { kick: 'شراكة', name: 'الشراكة الكاملة + موقع 3D', room: 'معرض متكامل', for: 'لمصانع الأثاث وشركات التصميم الداخلي والمعارض الكبيرة',
+    m: [4, 4, 4, 4],
+    items: ['كل المنصات', 'متجر أو معرض ثلاثي الأبعاد لقطعك', 'حملات إطلاق للتشكيلات والفروع', 'مدير حساب مخصص', 'تقارير أسبوعية ودعم أولوية'],
+    pins: [[30, 56, 'معرض 3D'], [70, 34, 'حملات إطلاق'], [52, 74, 'مدير حساب'], [18, 26, 'تقارير أسبوعية']] },
+];
+const PK_METERS = ['المحتوى', 'الإعلانات', 'البيانات والتحليل', 'تجربة 3D'];
+const PK_TOPIC = ['دراسة السوق', 'باقة الانطلاقة', 'باقة النمو', 'الشراكة الكاملة + موقع 3D'];
+
+function initPackages() {
+  const box = $('.pk__box'); if (!box) return;
+  const floors = $$('button', $('#pk-floors')), imgs = $$('img', $('#pk-imgs')), stage = $('#pk-stage');
+  const addons = $$('button', $('#pk-addons'));
+  let lv = 0;
+  const meter = (label, v) => `<div class="pk__m"><span>${label}</span><i>${[0, 1, 2, 3].map((k) => `<b class="${k < v ? 'on' : ''}"></b>`).join('')}</i></div>`;
+  function sum() {
+    const extra = addons.filter((b) => b.getAttribute('aria-pressed') === 'true').map((b) => b.textContent);
+    $('#pk-sum').innerHTML = `<span>خطتك:</span> <b>${PK[lv].name}</b>${extra.map((x) => ` + ${x}`).join('')}`;
+    $('#book-addons').value = extra.join('، ');
+  }
+  function show(i, first) {
+    lv = i; const P = PK[i];
+    floors.forEach((b, k) => { b.setAttribute('aria-selected', String(k === i)); b.classList.toggle('is-done', k < i); });
+    imgs.forEach((im, k) => im.classList.toggle('is-on', k === i));
+    stage.dataset.l = i;
+    $('#pk-floor').textContent = `الدور ${i + 1}`; $('#pk-room').textContent = P.room;
+    $('#pk-kick').textContent = P.kick; $('#pk-name').textContent = P.name; $('#pk-for').textContent = P.for;
+    box.classList.toggle('is-hot', !!P.hot);
+    $('#pk-meters').innerHTML = PK_METERS.map((l, k) => meter(l, P.m[k])).join('');
+    const prev = i > 0 ? [`<li class="pk__inh">كل ما في «${PK[i - 1].name}»</li>`] : [];
+    $('#pk-list').innerHTML = prev.concat(P.items.map((x) => `<li>${x}${i > 0 ? '<em>جديد</em>' : ''}</li>`)).join('');
+    $('#pk-pins').innerHTML = P.pins.map(([x, y, t], k) => `<span class="pk__pin" style="--x:${x}%;--y:${y}%;--d:${.25 + k * .12}s"><i></i>${t}</span>`).join('');
+    sum();
+    if (window.gsap && !reduced && !first) {
+      gsap.from('#pk-list li', { x: 18, opacity: 0, stagger: .05, duration: .4, ease: 'power2.out' });
+      gsap.from('.pk__m b.on', { scaleX: 0, transformOrigin: 'right', stagger: .02, duration: .3 });
+    }
+  }
+  floors.forEach((b, k) => b.addEventListener('click', () => show(k)));
+  $('#pk-floors').addEventListener('keydown', (e) => {
+    const d = { ArrowDown: 1, ArrowUp: -1, ArrowLeft: 1, ArrowRight: -1 }[e.key]; if (d == null) return;
+    e.preventDefault(); const n = (lv + d + 4) % 4; show(n); floors[n].focus();
+  });
+  addons.forEach((b) => b.addEventListener('click', () => { b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')); sum(); }));
+  $('#pk-book').addEventListener('click', () => { const t = $('#book-topic'); [...t.options].forEach((o) => { if (o.text === PK_TOPIC[lv]) t.value = o.value; }); });
+  show(0, true);
+}
+
 export function initDemos() {
+  initPackages();
+  initCalc();
   initStudy();
   initJourney();
   initFilm();

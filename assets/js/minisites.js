@@ -15,7 +15,7 @@ function h(tag, attrs = {}, ...kids) {
   for (const c of kids.flat()) if (c != null) el.append(c.nodeType ? c : document.createTextNode(c));
   return el;
 }
-const img = (f, alt = '') => h('img', { src: P + f + '.jpg', alt, loading: 'lazy', decoding: 'async' });
+const img = (f, alt = '') => h('img', { src: P + f + '.webp', alt, loading: 'lazy', decoding: 'async' });
 
 function shell(key, name, url, links, cartIcon, body) {
   const count = h('b', { class: 'ms__count' }, '0');
@@ -47,7 +47,7 @@ function darLiving() {
       const pic = img(it.v[0][0], it.n);
       let pick = 0;
       const sw = h('div', { class: 'ms__sw' }, ...it.v.map(([f, c], i) => {
-        const b = h('button', { type: 'button', 'aria-pressed': String(i === 0), 'aria-label': 'لون ' + (i + 1), style: '--c:' + c, onclick: () => { pick = i; pic.src = P + f + '.jpg'; [...sw.children].forEach((x) => x.setAttribute('aria-pressed', String(x === b))); } });
+        const b = h('button', { type: 'button', 'aria-pressed': String(i === 0), 'aria-label': 'لون ' + (i + 1), style: '--c:' + c, onclick: () => { pick = i; pic.src = P + f + '.webp'; [...sw.children].forEach((x) => x.setAttribute('aria-pressed', String(x === b))); } });
         return b;
       }));
       return h('div', { class: 'ms__card' }, pic, h('b', {}, it.n), h('span', {}, sar(it.p)), sw,
@@ -148,14 +148,15 @@ export function initRing() {
     ringEl.style.height = ht + 70 + 'px';
     apply();
   }
+  const R = document.documentElement.dir === 'rtl' ? 1 : -1; // carousel runs the other way in LTR
   function apply(live = 0) {
-    const shift = live / (w * .72);
+    const shift = live * R / (w * .72);
     sites.forEach((s, i) => {
       let k = i - idx; if (k > n / 2) k -= n; if (k < -n / 2) k += n;
       k -= shift;
       const a = Math.max(-1.6, Math.min(1.6, k));
       s.style.transition = live ? 'none' : 'transform .9s cubic-bezier(.2,.8,.2,1), filter .5s, opacity .5s';
-      s.style.transform = `translateX(${-a * w * .72}px) translateZ(${-Math.abs(a) * 320}px) rotateY(${a * 38}deg)`;
+      s.style.transform = `translateX(${-a * R * w * .72}px) translateZ(${-Math.abs(a) * 320}px) rotateY(${a * R * 38}deg)`;
       s.style.zIndex = String(10 - Math.round(Math.abs(k) * 2));
       s.style.opacity = Math.abs(k) > 1.6 ? '0' : '1';
       s.classList.toggle('is-front', i === idx);
@@ -177,7 +178,7 @@ export function initRing() {
     sx = e.clientX; dx = 0; ringEl.setPointerCapture(e.pointerId);
   });
   ringEl.addEventListener('pointermove', (e) => { if (sx == null) return; dx = e.clientX - sx; apply(dx); });
-  const up = () => { if (sx == null) return; sx = null; if (Math.abs(dx) > 40) go(idx + (dx > 0 ? 1 : -1)); else apply(); };
+  const up = () => { if (sx == null) return; sx = null; if (Math.abs(dx) > 40) go(idx + (dx * R > 0 ? 1 : -1)); else apply(); };
   ringEl.addEventListener('pointerup', up); ringEl.addEventListener('pointercancel', up);
 
   addEventListener('resize', layout);

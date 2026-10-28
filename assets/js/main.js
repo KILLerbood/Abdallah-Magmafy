@@ -1,5 +1,6 @@
 // Page orchestration: preloader, header, hero 3D + scroll, pinned services, reveals,
 // micro-interactions, and lazy start of the heavier sections.
+import './i18n.js';
 import { initHero } from './hero3d.js';
 import { initDemos } from './demos.js';
 
@@ -54,11 +55,13 @@ function intro() {
 /* ---------- header ---------- */
 const header = $('#header'), burger = $('#burger');
 let lastY = 0;
+const sbar = $('#scrollbar');
 addEventListener('scroll', () => {
   const y = scrollY;
   header.classList.toggle('is-scrolled', y > 30);
   header.classList.toggle('is-hidden', y > 600 && y > lastY && !header.classList.contains('is-open'));
   lastY = y;
+  sbar.style.transform = `scaleX(${y / Math.max(1, document.documentElement.scrollHeight - innerHeight)})`;
   $('.fab').classList.toggle('is-in', y > innerHeight * 1.2 && y < document.body.scrollHeight - innerHeight * 1.8);
 }, { passive: true });
 burger.addEventListener('click', () => { const o = header.classList.toggle('is-open'); burger.setAttribute('aria-expanded', String(o)); });
@@ -83,7 +86,7 @@ if (gs && ST && !reduced) {
     const strip = $('#services-strip');
     const dist = () => Math.max(0, strip.scrollWidth - innerWidth);
     const tw = gs.to(strip, {
-      x: () => dist(), ease: 'none',
+      x: () => (document.dir === 'rtl' ? 1 : -1) * dist(), ease: 'none',
       scrollTrigger: { trigger: '.services', pin: '.services__pin', start: 'top top', end: () => '+=' + dist(), scrub: .6, invalidateOnRefresh: true,
         onUpdate: (s) => { $('#services-bar').style.width = s.progress * 100 + '%'; } },
     });
@@ -91,7 +94,7 @@ if (gs && ST && !reduced) {
   });
 
   // reveals
-  const revealSel = '.head, .study__box, .cmp__wrap, .jy, .cfg, .ring__ctl, .stat, .step, .plan, .addons, .faq__intro, .faq details, .book, .process__intro, .film__frame, .footer__grid';
+  const revealSel = '.calc__box, .head, .study__box, .cmp__wrap, .jy, .cfg, .ring__ctl, .stat, .step, .pk__box, .faq__intro, .faq details, .book, .process__intro, .film__frame, .footer__grid';
   $$(revealSel).forEach((el) => el.classList.add('reveal'));
   ST.batch('.reveal', { start: 'top 88%', once: true, onEnter: (els) => gs.to(els, { opacity: 1, y: 0, duration: 1, ease: 'power3.out', stagger: .08, overwrite: true }) });
 
@@ -140,33 +143,29 @@ initDemos();
 const lazy = (sel, fn) => { const el = $(sel); const o = new IntersectionObserver(([e]) => { if (e.isIntersecting) { o.disconnect(); fn(); } }, { rootMargin: '600px' }); o.observe(el); };
 
 lazy('#sites3d', async () => {
-  const { initSofa, FABRICS, LEGS, SIZES } = await import('./sofa3d.js');
+  const { initSofa, FABRICS, LEGS } = await import('./sofa3d.js');
+  const stage = $('#cfg-stage'), loading = $('#cfg-loading');
+  const fallback = () => { stage.style.background = 'center/cover url(assets/img/sofa-green.webp)'; };
   let sofa;
-  try { sofa = initSofa($('#cfg-canvas')); } catch (err) { console.warn(err); $('.cfg__stage').style.background = 'center/cover url(assets/img/sofa-green.jpg)'; }
-  const state = { f: 0, l: 0, s: 1 };
+  try { sofa = initSofa($('#cfg-canvas'), { onLoad: (err) => { loading.classList.add('is-done'); if (err) fallback(); } }); } catch (err) { console.warn(err); loading.classList.add('is-done'); fallback(); }
+  const state = { f: 0, l: 0 };
   const sw = $('#cfg-fabrics');
   FABRICS.forEach((f, i) => {
     const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(i === 0)); b.setAttribute('aria-label', f.name); b.title = f.name; b.style.setProperty('--c', f.c);
     b.addEventListener('click', () => { state.f = i; $$('button', sw).forEach((x) => x.setAttribute('aria-checked', String(x === b))); sofa && sofa.setFabric(i); render(); });
     sw.append(b);
   });
-  const radio = (wrap, key, fn) => $(wrap).addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; $$('button', $(wrap)).forEach((x) => x.setAttribute('aria-checked', String(x === b))); state[key] = +b.dataset[key === 'l' ? 'leg' : 'size']; fn(state[key]); render(); });
-  radio('#cfg-legs', 'l', (i) => sofa && sofa.setLegs(i));
-  radio('#cfg-size', 's', (i) => sofa && sofa.setSize(i));
-  const priceEl = $('#cfg-price'), monthEl = $('#cfg-month');
-  function render() {
-    const p = SIZES[state.s].price + FABRICS[state.f].add + LEGS[state.l].add;
-    $('#cfg-fabric-name').textContent = FABRICS[state.f].name;
-    $('#cfg-name').textContent = `كنبة سَكَن · ${SIZES[state.s].name}`;
-    if (gs && !reduced) { const o = { v: +priceEl.textContent.replace(/,/g, '') }; gs.to(o, { v: p, duration: .6, ease: 'power2.out', onUpdate: () => { priceEl.textContent = Math.round(o.v).toLocaleString('en-US'); } }); }
-    else priceEl.textContent = p.toLocaleString('en-US');
-    monthEl.textContent = Math.round(p / 12).toLocaleString('en-US');
-  }
+  $('#cfg-legs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; $$('button', $('#cfg-legs')).forEach((x) => x.setAttribute('aria-checked', String(x === b))); state.l = +b.dataset.leg; sofa && sofa.setLegs(state.l); render(); });
+  const isEn = () => document.documentElement.lang === 'en';
+  function render() { $('#cfg-fabric-name').textContent = isEn() ? FABRICS[state.f].en : FABRICS[state.f].name; }
+  document.addEventListener('langchange', render);
   render();
+  $('#cfg-rooms').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; $$('button', $('#cfg-rooms')).forEach((x) => x.setAttribute('aria-checked', String(x === b))); stage.dataset.room = b.dataset.room; });
+  $('#cfg-dimsbtn').addEventListener('click', (e) => { const on = e.currentTarget.getAttribute('aria-pressed') !== 'true'; e.currentTarget.setAttribute('aria-pressed', String(on)); $('#cfg-dims').classList.toggle('is-on', on); });
   const toast = $('#cfg-toast');
-  const summary = () => `${$('#cfg-name').textContent} · ${FABRICS[state.f].name} · أرجل ${LEGS[state.l].name}`;
-  $('#cfg-book').addEventListener('click', () => { toast.textContent = '✓ في موقع عميلك، الزر ده بيحجز زيارة للمعرض مباشرة: ' + summary(); });
-  $('#cfg-quote').addEventListener('click', () => { toast.textContent = '✓ طلب عرض سعر لـ ' + summary() + ' يوصل لفريق المبيعات فورًا.'; });
+  const summary = () => isEn() ? `Frankie velvet sofa · ${FABRICS[state.f].en} · ${LEGS[state.l].en} legs` : `كنبة فرانكي · ${FABRICS[state.f].name} · أرجل ${LEGS[state.l].name}`;
+  $('#cfg-book').addEventListener('click', () => { toast.textContent = isEn() ? '✓ On your client’s site, this books a showroom visit directly: ' + summary() : '✓ في موقع عميلك، الزر ده بيحجز زيارة للمعرض مباشرة: ' + summary(); });
+  $('#cfg-quote').addEventListener('click', () => { toast.textContent = isEn() ? '✓ A request for ' + summary() + ' reaches the sales team instantly.' : '✓ طلب ' + summary() + ' يوصل لفريق المبيعات فورًا.'; });
 });
 
 lazy('#minis', async () => { const { initRing } = await import('./minisites.js'); initRing(); });

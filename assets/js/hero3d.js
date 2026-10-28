@@ -118,12 +118,12 @@ export function initHero(canvas, { onLoad } = {}) {
   manager.onProgress = (_, l, t) => onLoad && onLoad(l / t);
   const loader = new THREE.TextureLoader(manager);
   for (let i = 0; i < count; i++) {
-    const u = { map: { value: null }, uAspect: { value: 1 }, uFade: { value: 0 }, uTime: { value: 0 } };
+    const u = { map: { value: null }, uAspect: { value: 1 }, uFade: { value: 0 }, uHover: { value: 0 } };
     const mat = new THREE.ShaderMaterial({
       uniforms: u, transparent: true, side: THREE.DoubleSide, depthWrite: false,
       vertexShader: /* glsl */`varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
       fragmentShader: /* glsl */`
-        uniform sampler2D map; uniform float uAspect; uniform float uFade; varying vec2 vUv;
+        uniform sampler2D map; uniform float uAspect; uniform float uFade; uniform float uHover; varying vec2 vUv;
         float rbox(vec2 p, vec2 b, float r){ vec2 q=abs(p)-b+r; return length(max(q,0.))+min(max(q.x,q.y),0.)-r; }
         void main(){
           vec2 p = vUv - .5;
@@ -134,7 +134,8 @@ export function initHero(canvas, { onLoad } = {}) {
           if (uAspect > planeA) uv.x *= planeA / uAspect; else uv.y *= uAspect / planeA;
           vec3 col = texture2D(map, uv + .5).rgb;
           float edge = 1. - smoothstep(-.03, -.004, d);
-          col = mix(vec3(1.,.85,.6), col, edge*.92 + .08);
+          col = mix(vec3(1.,.85,.6), col, edge*(.92 - uHover*.5) + .08 + uHover*.5);
+          col *= 1. + uHover*.18;
           if(!gl_FrontFacing) col *= .35;
           gl_FragColor = vec4(col, a * uFade);
         }`
@@ -147,12 +148,23 @@ export function initHero(canvas, { onLoad } = {}) {
     holder.add(mesh);
     ring.add(holder);
     cards.push({ mesh, holder, u, ang, bob: Math.random() * Math.PI * 2 });
-    loader.load(`assets/img/${PHOTOS[i % PHOTOS.length]}.jpg`, (tex) => {
+    loader.load(`assets/img/${mobile ? 's/' : ''}${PHOTOS[i % PHOTOS.length]}.webp`, (tex) => {
       tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
       u.map.value = tex; u.uAspect.value = tex.image.width / tex.image.height;
       loaded++;
     });
   }
+
+  /* ---- orbit lines around the core ---- */
+  const orbits = [[1.75, .9, .2], [2.15, -.5, .7], [2.55, .25, -.9]].map(([r, rx, rz], i) => {
+    const m = new THREE.Mesh(new THREE.TorusGeometry(r, .006, 6, 160),
+      new THREE.MeshBasicMaterial({ color: ['#feda75', '#d62976', '#4f5bd5'][i], transparent: true, opacity: .55, blending: THREE.AdditiveBlending, depthWrite: false }));
+    m.rotation.set(rx, 0, rz);
+    const dot = new THREE.Mesh(new THREE.SphereGeometry(.045, 12, 12), new THREE.MeshBasicMaterial({ color: '#fff3d6' }));
+    m.add(dot);
+    world.add(m);
+    return { m, dot, r, speed: .4 + i * .18 };
+  });
 
   /* ---- embers ---- */
   const N = mobile ? 420 : 1300;
@@ -194,7 +206,7 @@ export function initHero(canvas, { onLoad } = {}) {
     const w = canvas.clientWidth, h = canvas.clientHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h; camera.updateProjectionMatrix();
-    if (w > 960) base = { x: -3.3 * Math.min(1, w / 1440) - .5, y: -.1, s: .88 };
+    if (w > 960) base = { x: (document.dir === "ltr" ? -1 : 1) * (-3.3 * Math.min(1, w / 1440) - .5), y: -.1, s: .88 };
     else base = { x: 0, y: 2.35, s: .7 };
   }
   resize();
@@ -203,7 +215,17 @@ export function initHero(canvas, { onLoad } = {}) {
   const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
   addEventListener('pointermove', (e) => { mouse.tx = e.clientX / innerWidth - .5; mouse.ty = e.clientY / innerHeight - .5; }, { passive: true });
 
-  let progress = 0, visible = true, running = true;
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(9, 9);
+  let hovered = null;
+  if (!mobile) canvas.parentElement.addEventListener('pointermove', (e) => {
+    const r = canvas.getBoundingClientRect();
+    ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  }, { passive: true });
+
+  // adaptive quality: if the first ~2 s run slow, drop resolution and half the embers
+  let samples = 0, acc = 0, degraded = false;
+
+  let progress = 0, lastP = 0, spin = 0, visible = true, running = true;
   new IntersectionObserver(([e]) => { visible = e.isIntersecting; }, { rootMargin: '100px' }).observe(canvas);
   document.addEventListener('visibilitychange', () => { running = !document.hidden; });
 
@@ -216,19 +238,35 @@ export function initHero(canvas, { onLoad } = {}) {
     t += reduced ? 0 : dt;
     mouse.x += (mouse.tx - mouse.x) * .05; mouse.y += (mouse.ty - mouse.y) * .05;
     const p = progress;
+    spin += (p - lastP) * 6; lastP = p; spin *= .92;
+    if (!degraded && !reduced) {
+      acc += dt; samples++;
+      if (samples === 120) {
+        if (acc / samples > 1 / 42) { degraded = true; renderer.setPixelRatio(1); pU.uPx.value = 1; embers.geometry.setDrawRange(0, N / 2); resize(); }
+        samples = 0; acc = 0;
+      }
+    }
     coreU.uTime.value = t; coreU.uHeat.value = p;
     coreU.uAmp.value = .14 + Math.sin(t * .8) * .025 + p * .08;
     pU.uTime.value = t;
     core.scale.setScalar(1 + p * .25);
     core.rotation.y = t * .15;
     glow.material.opacity = .85 + Math.sin(t * 1.3) * .1;
-    ring.rotation.y = t * .12 + p * Math.PI * .9;
+    ring.rotation.y += dt * .12 + spin * .04;
     ring.rotation.x = .32 - p * .25;
     const spread = 1 + p * .38;
+    orbits.forEach((o, i) => { const a = t * o.speed + i * 2; o.dot.position.set(Math.cos(a) * o.r, Math.sin(a) * o.r, 0); o.m.rotation.y = t * .1 * (i % 2 ? -1 : 1); });
+    if (!mobile) {
+      ray.setFromCamera(ndc, camera);
+      const hit = ray.intersectObjects(cards.map((c) => c.mesh))[0];
+      hovered = hit ? hit.object : null;
+      canvas.parentElement.style.cursor = hovered ? 'grab' : '';
+    }
     cards.forEach((c) => {
+      c.u.uHover.value += ((c.mesh === hovered ? 1 : 0) - c.u.uHover.value) * .12;
       c.mesh.position.z = R * spread;
       c.mesh.position.y = Math.sin(t * .9 + c.bob) * .12;
-      c.mesh.scale.setScalar(1 / Math.max(.85, spread * .92));
+      c.mesh.scale.setScalar((1 + c.u.uHover.value * .14) / Math.max(.85, spread * .92));
       c.u.uFade.value += ((c.u.map.value ? 1 : 0) - c.u.uFade.value) * .05;
     });
     world.position.x = base.x * (1 - p * .55);

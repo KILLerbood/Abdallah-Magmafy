@@ -143,14 +143,13 @@ export function initHero(canvas, { onLoad } = {}) {
     const mesh = new THREE.Mesh(geo, mat);
     const holder = new THREE.Group();
     const ang = (i / count) * Math.PI * 2;
-    holder.rotation.y = ang;
-    mesh.position.z = R;
     holder.add(mesh);
     ring.add(holder);
-    cards.push({ mesh, holder, u, ang, bob: Math.random() * Math.PI * 2 });
+    cards.push({ mesh, holder, u, ang, i, bob: Math.random() * Math.PI * 2, next: null, photo: null });
     loader.load(`assets/img/${mobile ? 's/' : ''}${PHOTOS[i % PHOTOS.length]}.webp`, (tex) => {
       tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
       u.map.value = tex; u.uAspect.value = tex.image.width / tex.image.height;
+      cards[i].photo = tex;
       loaded++;
     });
   }
@@ -163,8 +162,133 @@ export function initHero(canvas, { onLoad } = {}) {
     const dot = new THREE.Mesh(new THREE.SphereGeometry(.045, 12, 12), new THREE.MeshBasicMaterial({ color: '#fff3d6' }));
     m.add(dot);
     world.add(m);
-    return { m, dot, r, speed: .4 + i * .18 };
+    return { m, dot, r, speed: .4 + i * .18, flash: 0 };
   });
+
+  /* ---- tap themes: every tap moves the photos onto a new path and swaps them for one service ---- */
+  const en = () => document.documentElement.lang === 'en';
+  const CW = 420, CH = 528;
+  const BRAND = ['#feda75', '#fa7e1e', '#d62976', '#962fbf', '#4f5bd5'];
+  const extra = {};
+  ['ba-v-after', 'ba-c-after', 'ba-l-after', 'ba-v-before', 'ba-c-before', 'ba-l-before', 'analytics', 'dashboard'].forEach((k) => {
+    const im = new Image(); im.src = `assets/img/${k}.webp`; extra[k] = im;
+  });
+  const cover = (g, im, x, y, w, h) => {
+    if (!im || !im.width) { g.fillStyle = '#2a1838'; g.fillRect(x, y, w, h); return; }
+    const r = Math.max(w / im.width, h / im.height), sw = w / r, sh = h / r;
+    g.drawImage(im, (im.width - sw) / 2, (im.height - sh) / 2, sw, sh, x, y, w, h);
+  };
+  const rr = (g, x, y, w, h, r) => { g.beginPath(); g.roundRect(x, y, w, h, r); };
+  const grad = (g, x0, y0, x1, y1) => { const gr = g.createLinearGradient(x0, y0, x1, y1); BRAND.forEach((c, i) => gr.addColorStop(i / 4, c)); return gr; };
+  const font = (g, w, px) => { g.font = `${w} ${px}px Tajawal, "El Messiri", sans-serif`; g.textAlign = en() ? 'left' : 'right'; g.direction = en() ? 'ltr' : 'rtl'; };
+  const tx = () => (en() ? 30 : CW - 30);
+  const photoOf = (i) => cards[i % cards.length].photo?.image;
+  function drawStudy(g, i) {
+    { const bg = g.createLinearGradient(0, 0, 0, CH); bg.addColorStop(0, '#3a2150'); bg.addColorStop(1, '#1f1230'); g.fillStyle = bg; g.fillRect(0, 0, CW, CH); }
+    const kind = i % 4;
+    font(g, 700, 30); g.fillStyle = '#fff';
+    g.fillText(en() ? ['Market share', 'Price map', 'Demand trend', 'Competitors'][kind] : ['حصة السوق', 'خريطة الأسعار', 'اتجاه الطلب', 'المنافسون'][kind], tx(), 62);
+    font(g, 400, 20); g.fillStyle = '#b9a6cc';
+    g.fillText(en() ? ['Riyadh · furniture', 'Sofas · SAR', 'Last 12 months', 'Reply speed'][kind] : ['الرياض · أثاث', 'الكنب · ريال', 'آخر 12 شهر', 'سرعة الرد'][kind], tx(), 96);
+    if (kind === 0) {
+      [.55, .8, .4, .95, .65].forEach((v, k) => { g.fillStyle = k === 3 ? grad(g, 0, 480, 0, 200) : 'rgba(255,255,255,.14)'; rr(g, 40 + k * 72, 470 - v * 300, 50, v * 300, 10); g.fill(); });
+      font(g, 800, 34); g.fillStyle = '#feda75'; g.textAlign = 'center'; g.direction = 'ltr'; g.fillText('+38%', 40 + 3 * 72 + 25, 470 - .95 * 300 - 16);
+    } else if (kind === 1) {
+      for (let k = 0; k < 18; k++) { const x = 50 + (k * 97) % 320, y = 160 + (k * 61) % 280; g.fillStyle = k % 5 ? 'rgba(255,255,255,.25)' : BRAND[k % 5]; g.beginPath(); g.arc(x, y, k % 5 ? 7 : 12, 0, 7); g.fill(); }
+      g.strokeStyle = '#fa7e1e'; g.lineWidth = 3; g.setLineDash([8, 8]); g.beginPath(); g.moveTo(40, 440); g.lineTo(380, 170); g.stroke(); g.setLineDash([]);
+    } else if (kind === 2) {
+      g.strokeStyle = grad(g, 40, 0, 380, 0); g.lineWidth = 7; g.lineJoin = 'round'; g.beginPath();
+      [430, 400, 410, 360, 330, 340, 280, 250, 230, 200, 170, 150].forEach((y, k) => (k ? g.lineTo(40 + k * 31, y) : g.moveTo(40, y))); g.stroke();
+      g.fillStyle = '#feda75'; g.beginPath(); g.arc(40 + 11 * 31, 150, 11, 0, 7); g.fill();
+    } else {
+      [['A', .9], ['B', .62], ['C', .45], [en() ? 'You' : 'أنت', 1]].forEach(([n, v], k) => {
+        const y = 150 + k * 82; font(g, 700, 22); g.fillStyle = k === 3 ? '#feda75' : '#fff'; g.fillText(k === 3 ? n : (en() ? 'Rival ' : 'منافس ') + n, tx(), y);
+        g.fillStyle = 'rgba(255,255,255,.1)'; rr(g, 30, y + 14, 360, 16, 8); g.fill();
+        g.fillStyle = k === 3 ? grad(g, 30, 0, 390, 0) : 'rgba(255,255,255,.35)'; rr(g, en() ? 30 : 390 - 360 * v, y + 14, 360 * v, 16, 8); g.fill();
+      });
+    }
+  }
+  function drawAd(g, i) {
+    g.fillStyle = '#fff'; g.fillRect(0, 0, CW, CH);
+    cover(g, photoOf(i), 0, 70, CW, 330);
+    g.fillStyle = grad(g, 0, 0, 60, 60); g.beginPath(); g.arc(en() ? 44 : CW - 44, 35, 20, 0, 7); g.fill();
+    font(g, 700, 20); g.fillStyle = '#1a0f27'; g.fillText('your.showroom', en() ? 76 : CW - 76, 32);
+    font(g, 400, 16); g.fillStyle = '#8a7a99'; g.fillText(en() ? 'Sponsored' : 'ممول', en() ? 76 : CW - 76, 54);
+    g.fillStyle = grad(g, 0, 0, CW, 0); rr(g, 20, 418, CW - 40, 54, 14); g.fill();
+    font(g, 800, 22); g.fillStyle = '#fff'; g.textAlign = 'center'; g.fillText(en() ? ['Book a visit', 'Shop now', 'Get the offer'][i % 3] : ['احجز زيارة', 'تسوّق الآن', 'اطلب العرض'][i % 3], CW / 2, 453);
+    font(g, 400, 18); g.fillStyle = '#5a4b66'; g.direction = 'ltr'; g.textAlign = en() ? 'left' : 'right'; g.fillText(`♥ ${(1.2 + (i % 7) * .7).toFixed(1)}K   💬 ${40 + i * 13}`, tx(), 505);
+  }
+  function drawWeb(g, i) {
+    g.fillStyle = '#f7f2ec'; g.fillRect(0, 0, CW, CH);
+    g.fillStyle = '#e6ddd2'; g.fillRect(0, 0, CW, 40);
+    ['#ff5f57', '#febc2e', '#28c840'].forEach((c, k) => { g.fillStyle = c; g.beginPath(); g.arc(22 + k * 20, 20, 6, 0, 7); g.fill(); });
+    g.fillStyle = '#fff'; rr(g, 90, 10, 300, 20, 10); g.fill();
+    cover(g, photoOf(i + 3), 0, 40, CW, 200);
+    g.fillStyle = 'rgba(14,7,22,.45)'; g.fillRect(0, 40, CW, 200);
+    font(g, 800, 30); g.fillStyle = '#fff'; g.fillText(en() ? 'Your home, finer' : 'بيتك يستاهل أحلى', tx(), 140);
+    g.fillStyle = grad(g, 0, 0, 160, 0); rr(g, en() ? 30 : CW - 170, 165, 140, 40, 20); g.fill();
+    font(g, 700, 18); g.fillStyle = '#fff'; g.textAlign = 'center'; g.fillText(en() ? 'Shop now' : 'تسوّق الآن', en() ? 100 : CW - 100, 191);
+    [0, 1].forEach((k) => { const x = 20 + k * 200; g.fillStyle = '#fff'; rr(g, x, 260, 180, 240, 14); g.fill(); cover(g, photoOf(i + 5 + k), x + 10, 270, 160, 140);
+      font(g, 700, 18); g.fillStyle = '#1a0f27'; g.textAlign = 'center'; g.fillText(en() ? 'Loft sofa' : 'كنبة لوفت', x + 90, 440); g.fillStyle = '#d62976'; g.direction = 'ltr'; g.fillText((4 + k * 2 + i % 3) + ',450 SAR', x + 90, 470); });
+  }
+  function drawAI(g, i) {
+    const keys = ['ba-v-after', 'ba-c-after', 'ba-l-after', 'ba-v-before', 'ba-c-before', 'ba-l-before'];
+    const before = i % 2 === 1, k = keys[(i >> 1) % 3 + (before ? 3 : 0)];
+    cover(g, extra[k], 0, 0, CW, CH);
+    g.fillStyle = before ? 'rgba(14,7,22,.7)' : grad(g, 0, 0, CW, 0); rr(g, en() ? 20 : CW - 170, 20, 150, 40, 20); g.fill();
+    font(g, 800, 19); g.fillStyle = '#fff'; g.textAlign = 'center';
+    g.fillText(before ? (en() ? 'Phone photo' : 'صورة جوال') : (en() ? '✦ AI scene' : '✦ مشهد AI'), en() ? 95 : CW - 95, 47);
+  }
+  const THEMES = [
+    { key: 'feed', layout: 'ring' },
+    { key: 'study', layout: 'wheel', draw: drawStudy },
+    { key: 'ads', layout: 'helix', draw: drawAd },
+    { key: 'web', layout: 'wave', draw: drawWeb },
+    { key: 'ai', layout: 'infinity', draw: drawAI },
+  ];
+  const texCache = {};
+  function themeTex(t, i) {
+    const id = t.key + i + (en() ? 'e' : 'a');
+    if (texCache[id]) return texCache[id];
+    const c = document.createElement('canvas'); c.width = CW; c.height = CH;
+    t.draw(c.getContext('2d'), i);
+    const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+    return (texCache[id] = tex);
+  }
+  let theme = 0, layoutK = 0, pulse = 0, turn = 0;
+  // build and upload every theme's cards ahead of time, one per idle slot, so a tap never stalls a frame
+  const idle = window.requestIdleCallback || ((f) => setTimeout(f, 60));
+  function prebuild() {
+    const jobs = [];
+    THEMES.forEach((T) => T.draw && cards.forEach((_, i) => jobs.push([T, i])));
+    const next = () => { const j = jobs.shift(); if (!j) return; renderer.initTexture(themeTex(j[0], j[1])); idle(next); };
+    idle(next);
+  }
+  manager.onLoad = () => Promise.all(Object.values(extra).map((im) => im.decode?.().catch(() => {}))).then(() => setTimeout(prebuild, 1500));
+  function setTheme(n) {
+    theme = n;
+    const T = THEMES[n];
+    cards.forEach((c, i) => {
+      const tex = T.draw ? themeTex(T, i) : c.photo;
+      if (tex) c.next = tex;
+    });
+    pulse = 1; layoutK = 0;
+  }
+  // card placement on each path, in the ring's space: [x, y, z, rotY, scale]
+  const out = new THREE.Vector4();
+  function place(name, c, n, t, spread) {
+    const k = c.i / n, th = c.ang + turn;
+    switch (name) {
+      case 'wheel': { // a vertical wheel turning towards the viewer
+        const r = R * .72; return out.set(Math.sin(th) * .5, Math.sin(th) * r, Math.cos(th) * r, 0), .85; }
+      case 'helix': { const a = k * Math.PI * 4 + turn * 1.4; return out.set(Math.sin(a) * R * .78, (k - .5) * 4.2, Math.cos(a) * R * .78, a), .78; }
+      case 'wave': {
+        const cols = mobile ? 3 : 5, rows = Math.ceil(n / cols), col = c.i % cols, row = Math.floor(c.i / cols);
+        return out.set((col - (cols - 1) / 2) * 1.05, ((rows - 1) / 2 - row) * 1.3, -1.2 + Math.sin(t * 1.3 + col * .9 + row * .7) * .55, Math.sin(t * .8 + col) * .22), .74; }
+      case 'infinity': { const a = th; return out.set(Math.sin(a) * R * 1.02, Math.sin(a) * Math.cos(a) * R * .9, Math.cos(a) * R * .55, Math.sin(a) * .35), .8; }
+      default: return out.set(Math.sin(th) * R * spread, Math.sin(t * .9 + c.bob) * .12, Math.cos(th) * R * spread, th), 1 / Math.max(.85, spread * .92);
+    }
+  }
 
   /* ---- embers ---- */
   const N = mobile ? 420 : 1300;
@@ -252,10 +376,17 @@ export function initHero(canvas, { onLoad } = {}) {
     core.scale.setScalar(1 + p * .25);
     core.rotation.y = t * .15;
     glow.material.opacity = .85 + Math.sin(t * 1.3) * .1;
-    ring.rotation.y += dt * .12 + spin * .04;
-    ring.rotation.x = .32 - p * .25;
+    turn += dt * .12 + spin * .04;
+    const L = THEMES[theme].layout;
+    ring.rotation.x += ((L === 'ring' ? .32 - p * .25 : .06) - ring.rotation.x) * .06;
+    ring.rotation.y = 0;
+    pulse *= .95; layoutK = Math.min(1, layoutK + dt * .9);
     const spread = 1 + p * .38;
-    orbits.forEach((o, i) => { const a = t * o.speed + i * 2; o.dot.position.set(Math.cos(a) * o.r, Math.sin(a) * o.r, 0); o.m.rotation.y = t * .1 * (i % 2 ? -1 : 1); });
+    orbits.forEach((o, i) => {
+      const a = t * o.speed + i * 2; o.dot.position.set(Math.cos(a) * o.r, Math.sin(a) * o.r, 0); o.m.rotation.y = t * .1 * (i % 2 ? -1 : 1);
+      o.m.material.opacity = .55 + pulse * .4; o.dot.scale.setScalar(1 + pulse * 2);
+    });
+    coreU.uAmp.value += pulse * .2;
     if (!mobile) {
       ray.setFromCamera(ndc, camera);
       const hit = ray.intersectObjects(cards.map((c) => c.mesh))[0];
@@ -264,10 +395,16 @@ export function initHero(canvas, { onLoad } = {}) {
     }
     cards.forEach((c) => {
       c.u.uHover.value += ((c.mesh === hovered ? 1 : 0) - c.u.uHover.value) * .12;
-      c.mesh.position.z = R * spread;
-      c.mesh.position.y = Math.sin(t * .9 + c.bob) * .12;
-      c.mesh.scale.setScalar((1 + c.u.uHover.value * .14) / Math.max(.85, spread * .92));
-      c.u.uFade.value += ((c.u.map.value ? 1 : 0) - c.u.uFade.value) * .05;
+      const sc = place(L, c, cards.length, t, spread);
+      // ease towards the new path (a little faster as the morph settles)
+      const e = 1 - Math.exp(-dt * (2.2 + layoutK * 5));
+      c.mesh.position.x += (out.x - c.mesh.position.x) * e; c.mesh.position.y += (out.y - c.mesh.position.y) * e; c.mesh.position.z += (out.z - c.mesh.position.z) * e;
+      let dr = out.w - c.mesh.rotation.y; dr = Math.atan2(Math.sin(dr), Math.cos(dr)); c.mesh.rotation.y += dr * e;
+      c.cs = (c.cs ?? sc) + (sc - (c.cs ?? sc)) * e;
+      c.mesh.scale.setScalar(c.cs * (1 + c.u.uHover.value * .14));
+      // swap the picture while it is faded out
+      if (c.next) { c.u.uFade.value *= Math.exp(-dt * 12); if (c.u.uFade.value < .04) { c.u.map.value = c.next; c.u.uAspect.value = c.next.image.width / c.next.image.height; c.next = null; } }
+      else c.u.uFade.value += ((c.u.map.value ? 1 : 0) - c.u.uFade.value) * (1 - Math.exp(-dt * 5));
     });
     world.position.x = base.x * (1 - p * .55);
     world.position.y = base.y + p * .6;
@@ -280,5 +417,9 @@ export function initHero(canvas, { onLoad } = {}) {
   }
   frame();
 
-  return { setProgress(v) { progress = v; } };
+  return {
+    setProgress(v) { progress = v; },
+    // each tap: a new path for the photos and a new set of pictures for one service
+    tap() { setTheme((theme + 1) % THEMES.length); spin += .6; return theme; },
+  };
 }

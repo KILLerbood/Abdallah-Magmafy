@@ -167,6 +167,11 @@ export function initRing() {
     const target = ((i % n) + n) % n;
     idx = target; apply();
   }
+  // arrows point the way the sites move: the button on each side shows the site sitting on that side
+  const nextBtn = document.getElementById('ring-next'), prevBtn = document.getElementById('ring-prev');
+  const ctl = nextBtn.parentElement;
+  if (R === 1) { ctl.prepend(nextBtn); ctl.append(prevBtn); nextBtn.textContent = '‹'; prevBtn.textContent = '›'; }
+  else { ctl.prepend(prevBtn); ctl.append(nextBtn); prevBtn.textContent = '‹'; nextBtn.textContent = '›'; }
   document.getElementById('ring-next').addEventListener('click', () => go(idx + 1));
   document.getElementById('ring-prev').addEventListener('click', () => go(idx - 1));
 
@@ -178,7 +183,15 @@ export function initRing() {
     sx = e.clientX; dx = 0; ringEl.setPointerCapture(e.pointerId);
   });
   ringEl.addEventListener('pointermove', (e) => { if (sx == null) return; dx = e.clientX - sx; apply(dx); });
-  const up = () => { if (sx == null) return; sx = null; if (Math.abs(dx) > 40) go(idx + (dx * R > 0 ? 1 : -1)); else apply(); };
+  const up = (e) => {
+    if (sx == null) return; sx = null;
+    if (Math.abs(dx) > 40) go(idx + (dx * R > 0 ? 1 : -1));
+    else if (Math.abs(dx) < 8 && e.type === 'pointerup' && !e.target.closest('.ms.is-front')) {
+      // a tap on a side site brings that site to the front
+      const r = ringEl.getBoundingClientRect(), left = e.clientX < r.left + r.width / 2;
+      go(idx + (left ? R : -R));
+    } else apply();
+  };
   ringEl.addEventListener('pointerup', up); ringEl.addEventListener('pointercancel', up);
 
   addEventListener('resize', layout);

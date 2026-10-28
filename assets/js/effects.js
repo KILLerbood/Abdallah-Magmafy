@@ -25,7 +25,7 @@ function clickSpark() {
 
 /* spotlight: a soft glow that follows the pointer inside cards */
 function spotlight() {
-  const sel = '.svc, .stat, .pk__panel, .book, .calc__box, .study__box, .cfg__panel, .faq details, .step, .cmp__wrap';
+  const sel = '.dial__card, .stat, .pk__panel, .book, .calc__box, .study__box, .cfg__panel, .faq details, .step, .cmp__wrap';
   $$(sel).forEach((el) => { el.classList.add('spot'); el.prepend(Object.assign(document.createElement('i'), { className: 'spot__glow', ariaHidden: 'true' })); });
   document.addEventListener('pointermove', (e) => {
     const el = e.target.closest?.('.spot'); if (!el) return;

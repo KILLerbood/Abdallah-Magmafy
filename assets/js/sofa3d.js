@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from '../vendor/GLTFLoader.js';
 import { RoomEnvironment } from '../vendor/RoomEnvironment.js';
+import { buildRoom } from './room3d.js';
 
 // v = glTF variant index; tint = extra colour made from the grey velvet
 export const FABRICS = [
@@ -47,11 +48,32 @@ export function initSofa(canvas, { onLoad } = {}) {
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.ShadowMaterial({ opacity: .28 }));
   floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
 
+  // the furnished room (day / evening); 'studio' hides it and keeps the soft shadow floor
+  const room = buildRoom({ mobile }); room.group.visible = false; scene.add(room.group);
+  const view = { studio: null, room: null }, camTo = new THREE.Vector3(), lookTo = new THREE.Vector3(), look = new THREE.Vector3();
+  let mode = 'studio';
+
   const pivot = new THREE.Group(); scene.add(pivot);
   let fabricMesh = null, variants = [], legMat = null, footMat = null, pop = 1;
   const tinted = new Map();
 
-  new GLTFLoader().load(new URL('../models/sofa.glb', import.meta.url).href, async (gltf) => {
+  // frame the views for the real sofa size (218 x 81 cm) right away, so every mode shows a proper room even before the model arrives
+  const frame = (size) => {
+    const fit = size.x / 2.1;
+    room.group.scale.setScalar(size.x / 2.18);
+    view.studio = [new THREE.Vector3(0, size.y * 1.15 + .25 * fit, 4.6 * fit), new THREE.Vector3(0, size.y * .42, 0)];
+    view.room = [new THREE.Vector3(.45 * fit, size.y * 1.25 + .2 * fit, 6.9 * fit), new THREE.Vector3(0, size.y * .95, -.6 * fit)];
+  };
+  frame(new THREE.Vector3(2.18, .81, .89));
+
+  // load the model; if the .glb itself can't be served (some previews block binary files), use the base64 copy
+  const gl = new GLTFLoader(), url = new URL('../models/sofa.glb', import.meta.url).href;
+  const fail = (err) => { console.warn(err); onLoad && onLoad(err); };
+  const fromB64 = (err) => { console.warn('sofa.glb not served, using the embedded copy', err); return import('../models/sofa-data.js')
+    .then(({ default: t }) => { const bin = atob(t), buf = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i); gl.parse(buf.buffer, url.replace(/[^/]*$/, ''), ready, fail); })
+    .catch(fail); };
+  gl.load(url, ready, undefined, fromB64);
+  async function ready(gltf) {
     const model = gltf.scene;
     model.traverse((o) => {
       if (!o.isMesh) return;
@@ -66,15 +88,14 @@ export function initSofa(canvas, { onLoad } = {}) {
     const box = new THREE.Box3().setFromObject(model), size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
     model.position.set(-c.x, -box.min.y, -c.z);
     pivot.add(model);
-    const fit = size.x / 2.1;
-    camera.position.set(0, size.y * 1.15 + .25 * fit, 4.6 * fit);
-    camera.lookAt(0, size.y * .42, 0);
+    frame(size);
+    api.setRoom(mode, true);
     // preload every variant material so switching is instant
     const mats = await Promise.all(variants.map((m) => gltf.parser.getDependency('material', m.material)));
     variants.forEach((m, i) => { m.mat = mats[i]; });
     api.setFabric(cur.f); api.setLegs(cur.l);
     onLoad && onLoad();
-  }, undefined, (err) => { console.warn(err); onLoad && onLoad(err); });
+  }
 
   /* drag to rotate with inertia */
   let rotY = -.45, vel = 0, dragging = false, lastX = 0, idle = 0, touched = false;
@@ -86,9 +107,9 @@ export function initSofa(canvas, { onLoad } = {}) {
 
   function resize() {
     const w = stage.clientWidth, h = stage.clientHeight;
-    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); aim();
   }
-  resize(); addEventListener('resize', resize);
+  resize(); new ResizeObserver(resize).observe(stage);
 
   let visible = false;
   new IntersectionObserver(([e]) => { visible = e.isIntersecting; }, { rootMargin: '150px' }).observe(stage);
@@ -97,13 +118,22 @@ export function initSofa(canvas, { onLoad } = {}) {
     requestAnimationFrame(frame);
     const dt = Math.min(clock.getDelta(), .05);
     if (!visible || document.hidden) return;
-    if (!dragging) { vel *= .94; rotY += vel; idle += dt; if (idle > 2.5 || !touched) rotY += dt * .22; }
+    if (!dragging) { vel *= .94; rotY += vel; idle += dt; if (mode === 'studio' && (idle > 2.5 || !touched)) rotY += dt * .22; else if (mode !== 'studio' && !touched) rotY += (-.18 - rotY) * .05; }
     pivot.rotation.y = rotY;
+    if (view.room) { camera.position.lerp(camTo, .07); look.lerp(lookTo, .07); camera.lookAt(look); }
     pop += (1 - pop) * .12;
     pivot.scale.setScalar(pop);
     renderer.render(scene, camera);
   })();
 
+  // pull the camera back on narrow (portrait) stages so the whole sofa always fits the frame
+  function aim(snap) {
+    const v = view[mode === 'studio' ? 'studio' : 'room'];
+    if (!v) return;
+    const k = Math.max(1, ((mode === 'studio' ? 1.3 : 1.15) / camera.aspect) || 1);
+    lookTo.copy(v[1]); camTo.copy(v[0]).sub(v[1]).multiplyScalar(k).add(v[1]);
+    if (snap) { camera.position.copy(camTo); look.copy(lookTo); camera.lookAt(look); }
+  }
   const setMat = (m, [c, metal, rough]) => { if (!m) return; m.color.set(c); m.metalness = metal; m.roughness = rough; m.needsUpdate = true; };
   const cur = { f: 0, l: 0 };
   const api = {
@@ -118,7 +148,19 @@ export function initSofa(canvas, { onLoad } = {}) {
       }
       fabricMesh.material = mat; pop = .97;
     },
+    // studio = clean backdrop; day / night = the sofa standing in a real lit living room
+    setRoom(m, snap = false) {
+      mode = m;
+      const inRoom = m !== 'studio';
+      room.group.visible = inRoom; floor.visible = !inRoom; key.visible = rim.visible = !inRoom;
+      const M = inRoom ? room.setMode(m) : null;
+      scene.background = inRoom ? new THREE.Color(M.bg) : null;
+      scene.environmentIntensity = inRoom ? M.env : .9;
+      renderer.toneMappingExposure = inRoom ? M.exposure : 1.1;
+      aim(snap);
+    },
     setLegs(i) { cur.l = i; setMat(legMat, LEGS[i].leg); setMat(footMat, LEGS[i].foot); },
   };
+  api.setRoom('studio', true);
   return api;
 }

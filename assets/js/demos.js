@@ -84,12 +84,15 @@ function initJourney() {
   // 2 before / after
   const ba = $('#ba'), range = $('.ba__range', ba);
   range.addEventListener('input', () => ba.style.setProperty('--x', range.value + '%'));
-  const BA = [['sofa-leather', 'interior-sun'], ['chair-yellow', 'living-boho'], ['sofa-grey', 'living-soft']];
+  // the same piece in both shots: a flat phone snapshot, then the styled scene
+  const BA = ['v', 'c', 'l'];
+  const sweep = () => { if (!reduced && window.gsap) gsap.timeline().fromTo(range, { value: 100 }, { value: 4, duration: 1.1, ease: 'power2.inOut', onUpdate: () => ba.style.setProperty('--x', range.value + '%') }).to(range, { value: 50, duration: .8, ease: 'power3.out', onUpdate: () => ba.style.setProperty('--x', range.value + '%') }); };
+  new IntersectionObserver(([e], o) => { if (e.isIntersecting) { o.disconnect(); sweep(); } }, { threshold: .5 }).observe(ba);
   $('#jy-2 .jy__chips').addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b) return; press(b.parentElement, b);
-    const [bf, af] = BA[+b.dataset.ba];
-    $('#ba-before').src = `assets/img/${bf}.webp`; $('#ba-after').src = `assets/img/${af}.webp`;
-    if (!reduced && window.gsap) gsap.fromTo(range, { value: 85 }, { value: 50, duration: 1.2, ease: 'power3.inOut', onUpdate: () => ba.style.setProperty('--x', range.value + '%') });
+    const k = BA[+b.dataset.ba];
+    $('#ba-before').src = `assets/img/ba-${k}-before.webp`; $('#ba-after').src = `assets/img/ba-${k}-after.webp`;
+    sweep();
   });
 
   // 3 calendar
@@ -212,7 +215,7 @@ function initFilm() {
   if (!window.gsap) return;
   const section = $('#film'), cap = $('#film-caption'), scenes = $$('.fs'), chapters = $$('#film-chapters button');
   const toggle = $('#film-toggle'), time = $('#film-time');
-  const DUR = 8;
+  const DUR = 8, SPEED = 1.75; // scenes are authored on an 8s grid and played faster
   const tl = gsap.timeline({ paused: true, onUpdate: tick, onComplete: () => { section.classList.remove('is-playing'); toggle.textContent = '↺'; } });
 
   const scene = (i, build) => {
@@ -278,6 +281,7 @@ function initFilm() {
   });
   const total = scenes.length * DUR;
   tl.set({}, {}, total);
+  tl.timeScale(SPEED);
   function tick() {
     const t = tl.time();
     const cur = Math.min(scenes.length - 1, Math.floor(t / DUR));
@@ -286,13 +290,25 @@ function initFilm() {
       c.querySelector('span').style.width = Math.max(0, Math.min(1, (t - i * DUR) / DUR)) * 100 + '%';
     });
     const f = (x) => `${Math.floor(x / 60)}:${String(Math.floor(x % 60)).padStart(2, '0')}`;
-    time.textContent = `${f(t)} / ${f(total)}`;
+    time.textContent = `${f(t / SPEED)} / ${f(total / SPEED)}`;
   }
   const play = () => { if (tl.progress() >= 1) tl.restart(); else tl.play(); section.classList.add('is-playing'); toggle.textContent = '❚❚'; };
   const pause = () => { tl.pause(); toggle.textContent = '▶'; };
   $('#film-play').addEventListener('click', play);
   toggle.addEventListener('click', () => (tl.isActive() ? pause() : play()));
   chapters.forEach((c, i) => c.addEventListener('click', () => { tl.seek(i * DUR + .01); play(); }));
+  // tap the picture to jump to the next shot; swipe goes back or forward
+  const stage = $('#film-stage');
+  const jump = (d) => { const cur = Math.min(scenes.length - 1, Math.floor(tl.time() / DUR)); const nx = (cur + d + scenes.length) % scenes.length; tl.seek(nx * DUR + .01); play(); };
+  let fx = null;
+  stage.addEventListener('pointerdown', (e) => { fx = e.clientX; });
+  stage.addEventListener('pointerup', (e) => {
+    if (fx == null || e.target.closest('a, button')) { fx = null; return; }
+    const dx = e.clientX - fx; fx = null;
+    if (Math.abs(dx) > 50) jump((dx > 0) === (document.dir === 'rtl') ? 1 : -1);
+    else if (section.classList.contains('is-playing') || tl.progress() > 0.02) jump(1);
+  });
+  addEventListener('keydown', (e) => { if (!section.matches(':hover')) return; if (e.key === 'ArrowLeft') jump(document.dir === 'rtl' ? 1 : -1); if (e.key === 'ArrowRight') jump(document.dir === 'rtl' ? -1 : 1); });
   // show scene 1 as poster
   tl.seek(.6).pause(); tick();
   // auto-play once when scrolled into view
@@ -317,7 +333,7 @@ function initBooking() {
   const today = nowKSA(); today.setHours(0, 0, 0, 0);
   let view = new Date(today.getFullYear(), today.getMonth(), 1);
   { // jump to next month when this one has fewer than 3 bookable days left
-    let left = 0; for (let d = new Date(today); d.getMonth() === today.getMonth(); d.setDate(d.getDate() + 1)) if (d > today && d.getDay() < 5) left++;
+    let left = 0; for (let d = new Date(today); d.getMonth() === today.getMonth(); d.setDate(d.getDate() + 1)) if (d > today && d.getDay() !== 5) left++;
     if (left < 3) view = new Date(today.getFullYear(), today.getMonth() + 1, 1);
   }
   let day = null, slot = null, mtype = 'Google Meet';
@@ -338,7 +354,7 @@ function initBooking() {
     for (let d = 1; d <= days; d++) {
       const dt = new Date(view.getFullYear(), view.getMonth(), d);
       const b = document.createElement('button'); b.type = 'button'; b.textContent = d; b.className = 'num';
-      const off = dt.getDay() === 5 || dt.getDay() === 6 || dt <= today;
+      const off = dt.getDay() === 5 || dt <= today; // Friday off, Saturday to Thursday open
       b.disabled = off;
       b.setAttribute('aria-label', `${DAYS[dt.getDay()]} ${d} ${MONTHS[dt.getMonth()]}${off ? ' (غير متاح)' : ''}`);
       if (+dt === +today) b.classList.add('is-today');
@@ -349,7 +365,7 @@ function initBooking() {
     grid.replaceChildren(...cells);
   }
   function drawTimes() {
-    if (!day) { btTitle.textContent = 'اختر يومًا أولًا'; times.replaceChildren(Object.assign(document.createElement('p'), { textContent: 'الأيام المتاحة من الأحد إلى الخميس.' })); return; }
+    if (!day) { btTitle.textContent = 'اختر يومًا أولًا'; times.replaceChildren(Object.assign(document.createElement('p'), { textContent: 'الأيام المتاحة من السبت إلى الخميس.' })); return; }
     btTitle.textContent = `المواعيد المتاحة · ${DAYS[day.getDay()]} ${day.getDate()} ${MONTHS[day.getMonth()]}`;
     times.replaceChildren(...SLOTS.map((s) => {
       const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'radio'); b.textContent = ar12(s);
@@ -460,7 +476,7 @@ const PK = [
     pins: [[30, 56, 'معرض 3D'], [70, 34, 'حملات إطلاق'], [52, 74, 'مدير حساب'], [18, 26, 'تقارير أسبوعية']] },
 ];
 const PK_METERS = ['المحتوى', 'الإعلانات', 'البيانات والتحليل', 'تجربة 3D'];
-const PK_TOPIC = ['دراسة السوق', 'باقة الانطلاقة', 'باقة النمو', 'الشراكة الكاملة + موقع 3D'];
+const PK_TOPIC = ['دراسة السوق', 'استشارة تسويق', 'استشارة تسويق', 'نطاق الموقع'];
 
 function initPackages() {
   const box = $('.pk__box'); if (!box) return;
@@ -501,7 +517,68 @@ function initPackages() {
   show(0, true);
 }
 
+
+/* ---------- services dial: 8 services on a ring, the active one turns to the top ---------- */
+const SVC = [
+  { t: 'دراسة السوق', s: 'السوق', l: 'نعرف منافسيك وأسعارهم وعروضهم قبل ما نصرف ريال.', r: 'تقرير منافسين وخريطة فرص في 10 أيام', tag: 'تستلم', img: 'analytics' },
+  { t: 'صفحات هبوط للإعلانات', s: 'صفحات هبوط', l: 'صفحة سريعة لكل حملة، فيها زر حجز زيارة.', r: 'طلبات أكثر من نفس الميزانية', tag: 'النتيجة', img: 'living-mini' },
+  { t: 'صور وريلز بالذكاء الاصطناعي', s: 'صور AI', l: 'صورة جوال لقطعتك تتحول لمشهد يبيع.', r: 'محتوى أسرع بدون جلسات تصوير', tag: 'النتيجة', img: 'living-boho' },
+  { t: 'خطة محتوى موسمية', s: 'المحتوى', l: 'تقويم شهري على مواسم الأثاث: رمضان، الزواج، الجمعة البيضاء.', r: 'حضور ثابت كل أسبوع', tag: 'النتيجة', img: 'living-teal' },
+  { t: 'إدارة الإعلانات', s: 'الإعلانات', l: 'Meta وTikTok وSnapchat وPinterest لمن يجهّز بيته الآن.', r: 'زيارات معرض تقدر تعدّها', tag: 'النتيجة', img: 'sofa-green' },
+  { t: 'مواقع ومعارض 3D', s: 'موقع 3D', l: 'العميل يلفّ القطعة ويختار لونها ويحجز زيارة.', r: 'ثقة أعلى قبل الشراء', tag: 'النتيجة', img: 'chair-yellow' },
+  { t: 'إدارة الرسائل', s: 'الرسائل', l: 'رد خلال دقائق بصوت علامتك، والسؤال يتحول لموعد.', r: 'ولا استفسار يضيع', tag: 'النتيجة', img: 'dining' },
+  { t: 'تقارير شهرية واضحة', s: 'التقارير', l: 'استفسارات وزيارات وطلبات، مش لايكات.', r: 'قرارات مبنية على أرقام', tag: 'النتيجة', img: 'dashboard' },
+];
+function initDial() {
+  const ring = $('#dial-ring'); if (!ring) return;
+  const n = SVC.length, STEP = 360 / n, DUR = 4500;
+  let i = 0, turn = 0, timer = 0, t0 = performance.now(), paused = false, hold = 0;
+  const chips = SVC.map((x, k) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'dial__chip'; b.setAttribute('role', 'tab'); b.style.setProperty('--k', k);
+    b.innerHTML = `<i class="num">${String(k + 1).padStart(2, '0')}</i><span>${x.s}</span>`;
+    b.addEventListener('click', () => { go(k); userHold(); });
+    ring.append(b); return b;
+  });
+  const img = $('#dial-img'), card = $('#dial-card');
+  function go(k) {
+    const d = ((k - i) % n + n) % n, dir = d > n / 2 ? d - n : d; // shortest way round
+    i = (k + n) % n; turn += dir;
+    ring.style.setProperty('--turn', turn);
+    chips.forEach((c, j) => { c.setAttribute('aria-selected', String(j === i)); c.classList.toggle('is-on', j === i); });
+    const x = SVC[i];
+    $('#dial-num').textContent = String(i + 1).padStart(2, '0');
+    card.classList.remove('is-swap'); void card.offsetWidth; card.classList.add('is-swap');
+    img.src = `assets/img/${x.img}.webp`; img.alt = x.t;
+    $('#dial-title').textContent = x.t; $('#dial-line').textContent = x.l; $('#dial-res').textContent = x.r; $('#dial-tag').textContent = x.tag;
+    t0 = performance.now();
+  }
+  const userHold = () => { hold = performance.now() + 9000; };
+  $('#dial-next').addEventListener('click', () => { go(i + 1); userHold(); });
+  $('#dial-prev').addEventListener('click', () => { go(i - 1); userHold(); });
+  ring.addEventListener('keydown', (e) => { const d = { ArrowLeft: 1, ArrowDown: 1, ArrowRight: -1, ArrowUp: -1 }[e.key]; if (d == null) return; e.preventDefault(); go(i + d); chips[i].focus(); userHold(); });
+  // swipe on the dial turns it
+  let sx = null;
+  ring.addEventListener('pointerdown', (e) => { sx = e.clientX; });
+  ring.addEventListener('pointerup', (e) => { if (sx == null) return; const dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 40) { go(i + (dx > 0 ? 1 : -1)); userHold(); } });
+  const box = $('#dial');
+  box.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') paused = true; });
+  box.addEventListener('pointerleave', () => { paused = false; t0 = performance.now(); });
+  let visible = false;
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; }, { threshold: .3 }).observe(box);
+  const bar = $('#dial-bar');
+  (function tick(now) {
+    timer = requestAnimationFrame(tick);
+    if (!visible || reduced) return;
+    if (paused || now < hold) { t0 = now - (bar._p || 0) * DUR; return; }
+    const p = Math.min(1, (now - t0) / DUR); bar._p = p; bar.style.transform = `scaleX(${p})`;
+    if (p >= 1) go(i + 1);
+  })(performance.now());
+  go(0);
+}
+
 export function initDemos() {
+  initDial();
   initPackages();
   initCalc();
   initStudy();

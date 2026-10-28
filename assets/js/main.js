@@ -1,9 +1,11 @@
-// Page orchestration: preloader, header, hero 3D + scroll, pinned services, reveals,
+// Page orchestration: preloader, header, hero 3D + scroll, reveals,
 // micro-interactions, and lazy start of the heavier sections.
 import './i18n.js';
 import { initHero } from './hero3d.js';
 import { initDemos } from './demos.js';
 import { initEffects } from './effects.js';
+import { initBackdrop } from './bg3d.js';
+import { initVolcano } from './volcano.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -20,21 +22,32 @@ if (gs && ST) gs.registerPlugin(ST);
 
 document.body.classList.add('is-loading');
 
-/* ---------- preloader ---------- */
-const bar = $('#preloader-bar'), pct = $('#preloader-pct');
+/* ---------- preloader: the volcano ---------- */
+const pct = $('#preloader-pct');
+const volcano = initVolcano($('#preloader'), { reduced });
 let shown = 0, target = 0, finished = false;
-const setLoad = (v) => { target = Math.max(target, v); };
+const setLoad = (v) => { target = Math.max(target, v); volcano.set(v); };
 (function tickLoad() {
   shown += (target - shown) * .12;
-  bar.style.width = shown * 100 + '%'; pct.textContent = Math.round(shown * 100) + '%';
+  pct.textContent = Math.round(shown * 100) + '%';
   if (!finished) requestAnimationFrame(tickLoad);
 })();
 function finishLoad() {
   if (finished) return;
-  finished = true; target = 1; bar.style.width = '100%'; pct.textContent = '100%';
-  setTimeout(() => { $('#preloader').classList.add('is-done'); document.body.classList.remove('is-loading'); intro(); }, 250);
+  // let the volcano be seen for a moment, even on a fast connection
+  const wait = (reduced ? 0 : 2000) - performance.now();
+  if (wait > 0) { setLoad(1); setTimeout(finishLoad, wait); return; }
+  finished = true; target = 1; pct.textContent = '100%';
+  volcano.finish(() => {
+    $('#preloader').classList.add('is-revealing'); document.body.classList.remove('is-loading'); intro();
+  }, () => {
+    $('#preloader').classList.add('is-done');
+    // start the site-wide wave only once the reveal is over and the page is idle, so nothing stutters
+    const idle = window.requestIdleCallback || ((f) => setTimeout(f, 200));
+    setTimeout(() => idle(() => { try { initBackdrop(); } catch (err) { console.warn(err); } }), 1200);
+  });
 }
-setTimeout(finishLoad, 4500); // never block the page
+setTimeout(finishLoad, 6000); // never block the page
 
 /* ---------- hero 3D ---------- */
 let hero = null;
@@ -46,6 +59,18 @@ try {
   finishLoad();
 }
 setLoad(.15);
+
+// hero taps: each tap moves the photos onto a new path and shows one service
+if (hero) {
+  const TAP = ['اضغط على المشهد', 'دراسة السوق', 'الإعلانات', 'مواقع 3D', 'صور AI'];
+  const tapLabel = (n) => { $('#hero-tap-t').textContent = TAP[n]; $('#hero-tap-n').textContent = `${n + 1}/${TAP.length}`; };
+  $('.hero__pin').addEventListener('click', (e) => {
+    if (e.target.closest('a, .hero__inner p, .hero__title, .hero__stats') || scrollY > innerHeight * .6) return;
+    const n = hero.tap();
+    tapLabel(n);
+    $('#hero-tap').classList.remove('is-pop'); void $('#hero-tap').offsetWidth; $('#hero-tap').classList.add('is-pop');
+  });
+}
 
 function intro() {
   if (!gs || reduced) return;
@@ -71,8 +96,20 @@ burger.addEventListener('click', () => { const o = header.classList.toggle('is-o
 $$('#nav a').forEach((a) => a.addEventListener('click', () => { header.classList.remove('is-open'); burger.setAttribute('aria-expanded', 'false'); }));
 // active link
 const navLinks = $$('#nav a');
-const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) navLinks.forEach((a) => a.classList.toggle('is-active', a.getAttribute('href') === '#' + e.target.id)); }), { rootMargin: '-45% 0px -50% 0px' });
-navLinks.forEach((a) => { const s = $(a.getAttribute('href')); if (s) io.observe(s); });
+// the link of the last section whose top has passed 40% of the screen stays lit; none in the hero or the booking form
+const spy = navLinks.map((a) => [a, $(a.getAttribute('href'))]).filter(([, s]) => s);
+const stopAt = $('#contact');
+let spyRaf = 0;
+const updateSpy = () => {
+  spyRaf = 0;
+  const line = innerHeight * .4;
+  let cur = null;
+  for (const [a, s] of spy) if (s.getBoundingClientRect().top <= line) cur = a;
+  if (stopAt && stopAt.getBoundingClientRect().top <= line) cur = null;
+  navLinks.forEach((a) => a.classList.toggle('is-active', a === cur));
+};
+addEventListener('scroll', () => { if (!spyRaf) spyRaf = requestAnimationFrame(updateSpy); }, { passive: true });
+updateSpy();
 
 /* ---------- scroll choreography ---------- */
 if (gs && ST && !reduced) {
@@ -81,23 +118,10 @@ if (gs && ST && !reduced) {
   // hero: scene opens up while the copy drifts away
   ST.create({ trigger: '.hero', start: 'top top', end: 'bottom bottom', scrub: true, onUpdate: (s) => hero && hero.setProgress(s.progress) });
   gs.to('.hero__inner', { opacity: 0, y: -80, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: '55% bottom', scrub: true } });
-  gs.to('.hero__tags, .hero__scroll', { opacity: 0, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: '30% bottom', scrub: true } });
-
-  // services: horizontal pinned strip on desktop, native swipe on mobile
-  const mm = gs.matchMedia();
-  mm.add('(min-width: 961px)', () => {
-    const strip = $('#services-strip');
-    const dist = () => Math.max(0, strip.scrollWidth - innerWidth);
-    const tw = gs.to(strip, {
-      x: () => (document.dir === 'rtl' ? 1 : -1) * dist(), ease: 'none',
-      scrollTrigger: { trigger: '.services', pin: '.services__pin', start: 'top top', end: () => '+=' + dist(), scrub: .6, invalidateOnRefresh: true,
-        onUpdate: (s) => { $('#services-bar').style.width = s.progress * 100 + '%'; } },
-    });
-    return () => tw.scrollTrigger && tw.scrollTrigger.kill();
-  });
+  gs.to('.hero__tags, .hero__scroll, .hero__tap', { opacity: 0, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: '30% bottom', scrub: true } });
 
   // reveals
-  const revealSel = '.calc__box, .head, .study__box, .cmp__wrap, .jy, .cfg, .ring__ctl, .stat, .step, .pk__box, .faq__intro, .faq details, .book, .process__intro, .film__frame, .footer__grid';
+  const revealSel = '.dial, .calc__box, .head, .study__box, .cmp__wrap, .jy, .cfg, .ring__ctl, .stat, .step, .pk__box, .faq__intro, .faq details, .book, .process__intro, .film__frame, .footer__grid';
   $$(revealSel).forEach((el) => el.classList.add('reveal'));
   ST.batch('.reveal', { start: 'top 88%', once: true, onEnter: (els) => gs.to(els, { opacity: 1, y: 0, duration: 1, ease: 'power3.out', stagger: .08, overwrite: true }) });
 
@@ -108,6 +132,11 @@ if (gs && ST && !reduced) {
   gs.from('.footer__big, .pword', { yPercent: 40, opacity: 0, ease: 'none', scrollTrigger: { trigger: '.footer', start: 'top bottom', end: 'top 40%', scrub: true } });
 
   addEventListener('load', () => ST.refresh());
+  // browser zoom, late fonts and lazily built sections all change the page height: re-measure every trigger
+  let rT = 0, lastH = 0;
+  const reMeasure = () => { clearTimeout(rT); rT = setTimeout(() => { const h = document.body.scrollHeight; if (h !== lastH) { lastH = h; ST.refresh(); } }, 250); };
+  new ResizeObserver(reMeasure).observe(document.body);
+  document.fonts?.ready.then(reMeasure);
 }
 
 /* ---------- counters ---------- */
@@ -148,9 +177,9 @@ const lazy = (sel, fn) => { const el = $(sel); const o = new IntersectionObserve
 lazy('#sites3d', async () => {
   const { initSofa, FABRICS, LEGS } = await import('./sofa3d.js');
   const stage = $('#cfg-stage'), loading = $('#cfg-loading');
-  const fallback = () => { stage.style.background = 'center/cover url(assets/img/sofa-green.webp)'; };
+  const fallback = () => { loading.textContent = isEn() ? 'Could not load the 3D sofa. Please refresh the page.' : 'تعذّر تحميل الكنبة ثلاثية الأبعاد، حدّث الصفحة.'; loading.classList.remove('is-done'); };
   let sofa;
-  try { sofa = initSofa($('#cfg-canvas'), { onLoad: (err) => { loading.classList.add('is-done'); if (err) fallback(); } }); } catch (err) { console.warn(err); loading.classList.add('is-done'); fallback(); }
+  try { sofa = initSofa($('#cfg-canvas'), { onLoad: (err) => { if (err) fallback(); else loading.classList.add('is-done'); } }); } catch (err) { console.warn(err); loading.classList.add('is-done'); fallback(); }
   const state = { f: 0, l: 0 };
   const sw = $('#cfg-fabrics');
   FABRICS.forEach((f, i) => {
@@ -163,7 +192,7 @@ lazy('#sites3d', async () => {
   function render() { $('#cfg-fabric-name').textContent = isEn() ? FABRICS[state.f].en : FABRICS[state.f].name; }
   document.addEventListener('langchange', render);
   render();
-  $('#cfg-rooms').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; $$('button', $('#cfg-rooms')).forEach((x) => x.setAttribute('aria-checked', String(x === b))); stage.dataset.room = b.dataset.room; });
+  $('#cfg-rooms').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; $$('button', $('#cfg-rooms')).forEach((x) => x.setAttribute('aria-checked', String(x === b))); stage.dataset.room = b.dataset.room; sofa && sofa.setRoom(b.dataset.room); });
   $('#cfg-dimsbtn').addEventListener('click', (e) => { const on = e.currentTarget.getAttribute('aria-pressed') !== 'true'; e.currentTarget.setAttribute('aria-pressed', String(on)); $('#cfg-dims').classList.toggle('is-on', on); });
   const toast = $('#cfg-toast');
   const summary = () => isEn() ? `Frankie velvet sofa · ${FABRICS[state.f].en} · ${LEGS[state.l].en} legs` : `كنبة فرانكي · ${FABRICS[state.f].name} · أرجل ${LEGS[state.l].name}`;

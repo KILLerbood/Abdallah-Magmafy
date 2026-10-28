@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3501N0+YQLnKeb4XiwmX2IIMx4LJ+3mJnasQkBa5Mp8=' 'sha256-vC1cI8dsE+n7/tOWiTdyWrs/uTTwRFrXF3P1WYIg31Y='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' data: blob: https://formsubmit.co; media-src 'self' blob:; worker-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>Magmafy | وكالة نمو السوشيال ميديا لمعارض الأثاث والديكور</title>
   <meta name="description" content="Magmafy وكالة نمو متخصصة في معارض الأثاث ومتاجر الديكور: صور وريلز واقعية بالذكاء الاصطناعي، إعلانات، إدارة رسائل، ومواقع ثلاثية الأبعاد تبيع قطعك.">
   <meta name="theme-color" content="#0e0716">
@@ -762,16 +764,19 @@
             </div>
             <div class="book__form">
               <div class="book__sel" id="book-sel"><span>موعدك</span><b>لم يتم الاختيار بعد</b></div>
-              <label>الاسم<input name="name" required autocomplete="name" placeholder="اسمك الكامل"></label>
-              <label>البريد الإلكتروني<input name="email" type="email" required autocomplete="email" placeholder="you@company.com" dir="ltr"></label>
-              <label>رقم الجوال<input name="phone" type="tel" autocomplete="tel" placeholder="+966 5X XXX XXXX" dir="ltr"></label>
-              <label>اسم النشاط والدولة<input name="biz" required placeholder="مثال: دار ليفينج · الرياض"></label>
+              <label>الاسم<input name="name" required autocomplete="name" maxlength="60" placeholder="اسمك الكامل"></label>
+              <label>البريد الإلكتروني<input name="email" type="email" required autocomplete="email" maxlength="100" placeholder="you@company.com" dir="ltr"></label>
+              <label>رقم الجوال<input name="phone" type="tel" autocomplete="tel" maxlength="20" inputmode="tel" placeholder="+966 5X XXX XXXX" dir="ltr"></label>
+              <label>اسم النشاط والدولة<input name="biz" required maxlength="80" placeholder="مثال: دار ليفينج · الرياض"></label>
               <input type="hidden" name="addons" id="book-addons">
               <label>موضوع الاجتماع
                 <select name="topic" id="book-topic">
                   <option>استشارة تسويق</option><option>دراسة السوق</option><option>نطاق الموقع</option><option>استشارة عامة</option>
                 </select>
               </label>
+              <!-- spam trap: hidden from people, bots fill it in -->
+              <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+              <label class="book__consent"><input type="checkbox" name="consent" required><span>أوافق على <a href="privacy.html" data-keep-lang target="_blank" rel="noopener">سياسة الخصوصية</a> و<a href="terms.html" data-keep-lang target="_blank" rel="noopener">الشروط والأحكام</a>، وعلى استخدام بياناتي لتنظيم الاجتماع.</span></label>
               <button type="submit" class="btn btn--grad btn--block" id="book-submit">أكّد الموعد</button>
               <p class="form__note" id="book-note" role="status"></p>
             </div>
@@ -807,7 +812,7 @@
     </div>
     <div class="wrap footer__bottom">
       <p>© <span class="num">2026</span> Magmafy. جميع الحقوق محفوظة.</p>
-      <ul><li><a href="#home">سياسة الخصوصية</a></li><li><a href="#home">الشروط والأحكام</a></li></ul>
+      <ul><li><a href="privacy.html" data-keep-lang>سياسة الخصوصية</a></li><li><a href="terms.html" data-keep-lang>الشروط والأحكام</a></li></ul>
     </div>
     <p class="footer__made" dir="ltr">Made by Magmafy</p>
   </footer>

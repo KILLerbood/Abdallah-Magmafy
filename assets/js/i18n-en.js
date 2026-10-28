@@ -749,5 +749,16 @@ export default {
 "تقارير شهرية واضحة": "Clear monthly reports",
 "استفسارات وزيارات وطلبات، مش لايكات.": "Inquiries, visits and orders, not likes.",
 "قرارات مبنية على أرقام": "Decisions based on numbers",
-"الفكرة": "The idea"
+"الفكرة": "The idea",
+"أوافق على": "I agree to the",
+"و": "and",
+"، وعلى استخدام بياناتي لتنظيم الاجتماع.": ", and to my details being used to arrange the meeting.",
+"تم استلام طلبك.": "Your request has been received.",
+"الروابط غير مسموحة في الحقول. اكتب الاسم واسم النشاط فقط.": "Links are not allowed in the fields. Please enter just your name and business name.",
+"من فضلك أكمل الحقول المطلوبة بشكل صحيح.": "Please fill in the required fields correctly.",
+"من فضلك وافق على سياسة الخصوصية والشروط أولًا.": "Please agree to the Privacy Policy and Terms first.",
+"تم إرسال حجز قبل قليل. انتظر دقيقة ثم حاول مرة أخرى.": "A booking was just sent. Please wait a minute and try again.",
+"وصلت للحد الأقصى من الحجوزات اليوم. راسلنا على البريد لو محتاج موعد إضافي.": "You have reached today's booking limit. Email us if you need another meeting.",
+"اضغط هنا لإرسال الحجز بالبريد": "click here to send the booking by email",
+"وسنؤكده فورًا.": "and we'll confirm it right away."
 };

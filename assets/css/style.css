@@ -485,11 +485,24 @@ h1 .grad, h2 .grad { font-family: var(--f-art); font-weight: 700; font-size: 1.1
 .process__grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: clamp(30px, 6vw, 90px); align-items: start; }
 .process__intro { position: sticky; top: 120px; }
 .process__intro p:not(.eyebrow) { color: var(--mist); margin: 16px 0 28px; }
-.steps { position: relative; display: grid; gap: 22px; }
-.steps::before { content: ""; position: absolute; top: 10px; bottom: 10px; right: 31px; width: 2px; background: var(--line-2); }
-.steps::after { content: ""; position: absolute; top: 10px; right: 31px; width: 2px; height: var(--fill, 0%); max-height: calc(100% - 20px); background: var(--grad); }
-.step { position: relative; display: flex; gap: 22px; padding: 22px; border-radius: var(--r); background: var(--plum); box-shadow: inset 0 0 0 1px var(--line); }
-.step__n { position: relative; z-index: 1; flex: none; width: 46px; height: 46px; display: grid; place-items: center; margin-inline-start: -14px; border-radius: 50%; background: var(--night); box-shadow: inset 0 0 0 2px var(--p); font-size: .95rem; }
+.steps { --rail: 23px; position: relative; display: grid; gap: 22px; margin: 0; padding: 0; padding-inline-start: 70px; list-style: none; }
+/* the rail runs down the start side (right in Arabic, left in English), outside the cards */
+.steps::before { content: ""; position: absolute; top: 24px; bottom: 24px; inset-inline-start: var(--rail); width: 2px; border-radius: 2px; background: var(--line-2); }
+.steps::after { content: ""; position: absolute; top: 24px; inset-inline-start: var(--rail); width: 2px; height: var(--fill, 0%); max-height: calc(100% - 48px); border-radius: 2px; background: linear-gradient(180deg, var(--y), var(--o) 35%, var(--p) 70%, var(--v)); box-shadow: 0 0 12px rgba(250, 126, 30, .7); }
+/* a spark rides the tip of the filled part */
+.steps__spark { position: absolute; z-index: 2; top: calc(24px + min(var(--fill, 0%), 100% - 48px)); inset-inline-start: calc(var(--rail) + 1px); width: 14px; height: 14px; margin: -7px; margin-inline-start: -7px; border-radius: 50%; background: #fff3d6; box-shadow: 0 0 0 4px rgba(254, 218, 117, .25), 0 0 18px 6px rgba(250, 126, 30, .8), 0 0 40px 10px rgba(214, 41, 118, .45); pointer-events: none; opacity: var(--spark, 0); transition: opacity .3s; }
+.step { position: relative; display: block; padding: 22px 24px; border-radius: var(--r); background: var(--plum); box-shadow: inset 0 0 0 1px var(--line); transition: box-shadow .5s var(--ease), transform .5s var(--ease); }
+.step__n { --off: calc(-70px + var(--rail) - 22px); position: absolute; z-index: 3; top: 18px; right: var(--off); width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; background: var(--night); box-shadow: inset 0 0 0 2px var(--line-2); color: var(--dim); font-size: .95rem; transition: box-shadow .5s var(--ease), color .5s, transform .5s var(--ease); }
+/* a small arm joins each number to its card */
+.step__n::after { content: ""; position: absolute; top: 50%; right: 100%; width: 24px; height: 2px; background: var(--line-2); transition: background .5s; }
+.step.is-on { box-shadow: inset 0 0 0 1px rgba(250, 126, 30, .35), 0 16px 40px -20px rgba(214, 41, 118, .55); }
+.step.is-on .step__n { color: #fff; box-shadow: inset 0 0 0 2px var(--o), 0 0 0 5px rgba(250, 126, 30, .12), 0 0 22px rgba(250, 126, 30, .55); transform: scale(1.06); }
+.step.is-on .step__n::after { background: linear-gradient(90deg, var(--o), var(--p)); }
+html[dir="rtl"] .step.is-on .step__n::after { background: linear-gradient(270deg, var(--o), var(--p)); }
+/* .num forces left-to-right text, so the number badge is placed with physical sides per language */
+html[dir="ltr"] .step__n { right: auto; left: var(--off); }
+html[dir="ltr"] .step__n::after { right: auto; left: 100%; }
+@media (max-width: 640px) { .steps { --rail: 19px; padding-inline-start: 56px; } .step { padding: 18px; } .step__n { --off: calc(-56px + var(--rail) - 20px); width: 40px; height: 40px; top: 16px; } .step__n::after { width: 16px; } }
 .step p { color: var(--mist); margin-top: 6px; }
 .step__out { color: var(--ink) !important; font-weight: 500; }
 .step__out span { color: var(--y); font-size: .78rem; font-weight: 700; margin-inline-end: 8px; }
@@ -600,11 +613,17 @@ h1 .grad, h2 .grad { font-family: var(--f-art); font-weight: 700; font-size: 1.1
   .study__deliver { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 960px) {
-  .nav { position: fixed; inset: 74px 0 auto; flex-direction: column; gap: 0; padding: 10px 20px 24px; background: rgba(14, 7, 22, .97); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); transform: translateY(-12px); opacity: 0; visibility: hidden; transition: .3s var(--ease); font-size: 1.1rem; }
+  .nav { position: fixed; inset: calc(86px + env(safe-area-inset-top)) 10px auto; border-radius: 20px; flex-direction: column; gap: 0; padding: 10px 20px 24px; background: rgba(14, 7, 22, .97); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); transform: translateY(-12px); opacity: 0; visibility: hidden; transition: .3s var(--ease); font-size: 1.1rem; }
   .nav a { padding: 14px 0; border-bottom: 1px solid var(--line); }
   .nav a::after { display: none; }
   .header.is-open .nav { transform: none; opacity: 1; visibility: visible; }
   .header.is-open { background: rgba(14, 7, 22, .97); }
+  /* on phones the bar always has its own backing, so the logo and buttons stay clear over the 3D scene */
+  /* phones: a floating bar a little below the top edge, with a solid backing (no blur over the live 3D,
+     which made phones stutter), so the logo and buttons are always clear */
+  .header, .header.is-scrolled { top: calc(10px + env(safe-area-inset-top)); left: 10px; right: 10px; padding-top: 0; border: 1px solid var(--line-2); border-radius: 20px; background: rgba(14, 7, 22, .93); backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: 0 10px 30px rgba(0, 0, 0, .35); }
+  .header.is-hidden { transform: none; }
+  .header .wrap { padding-inline: 12px; }
   .burger { display: block; }
   .header__cta { margin-inline-start: auto; }
   .hero__shade { background: linear-gradient(0deg, rgba(14, 7, 22, .96) 0%, rgba(14, 7, 22, .78) 45%, rgba(14, 7, 22, .15) 80%); }
@@ -622,7 +641,7 @@ h1 .grad, h2 .grad { font-family: var(--f-art); font-weight: 700; font-size: 1.1
 @media (max-width: 640px) {
   body { font-size: 1rem; }
   .header__inner { height: 64px; gap: 12px; }
-  .nav { top: 64px; }
+  .nav { top: calc(82px + env(safe-area-inset-top)); }
   .logo__word { font-size: 1.15rem; }
   .logo__mark { width: 32px; height: 32px; }
   .header__cta { min-height: 38px; padding: 0 14px; font-size: .84rem; }
@@ -721,7 +740,7 @@ h1 .grad, h2 .grad { font-family: var(--f-art); font-weight: 700; font-size: 1.1
 .scrollbar { position: fixed; inset: 0 0 auto; z-index: 85; height: 3px; pointer-events: none; }
 .scrollbar span { display: block; height: 100%; width: 100%; background: var(--grad); transform-origin: right; transform: scaleX(0); }
 .skip { position: fixed; top: -60px; right: 16px; z-index: 300; padding: 10px 16px; border-radius: 12px; background: var(--grad); color: #fff; font-weight: 700; }
-.skip:focus { top: 12px; }
+.skip:focus-visible { top: 12px; }
 
 /* ============ packages: floors of a room ============ */
 .pk__box { display: grid; grid-template-columns: 1.15fr 1fr; border-radius: 30px; overflow: hidden; background: var(--plum); box-shadow: inset 0 0 0 1px var(--line), 0 50px 120px -50px rgba(150, 47, 191, .55); transition: box-shadow .6s; }
@@ -999,7 +1018,7 @@ html[dir="ltr"] .hero__tap { left: auto; right: 21%; translate: 50% 0; }
 .hero__tap.is-pop { animation: tapPop .5s var(--ease); }
 @keyframes tapPing { 0% { box-shadow: 0 0 0 0 rgba(254, 218, 117, .7); } 100% { box-shadow: 0 0 0 14px rgba(254, 218, 117, 0); } }
 @keyframes tapPop { 40% { scale: 1.12; } }
-@media (max-width: 960px) { .hero__tap, html[dir="ltr"] .hero__tap { left: 50%; right: auto; translate: -50% 0; bottom: auto; top: calc(78px + env(safe-area-inset-top)); font-size: .8rem; } }
+@media (max-width: 960px) { .hero__tap, html[dir="ltr"] .hero__tap { left: 50%; right: auto; translate: -50% 0; bottom: auto; top: calc(96px + env(safe-area-inset-top)); font-size: .8rem; white-space: nowrap; } }
 @media (prefers-reduced-motion: reduce) { .hero__tap i { animation: none; } }
 
 /* never let one wide element make the whole page scroll sideways (clip, unlike hidden, keeps sticky working) */
@@ -1045,3 +1064,10 @@ html[dir="ltr"] .hero__scroll { left: auto; right: 4%; }
   .nav { gap: 12px; font-size: .84rem; }
   .header__cta { padding-inline: 14px; }
 }
+
+/* booking: spam trap (off-screen, never seen by people) and the privacy consent */
+.hp { position: absolute !important; inset-inline-start: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.book__consent { display: flex !important; flex-direction: row !important; align-items: flex-start; gap: 10px; font-size: .86rem; line-height: 1.7; color: var(--mist); cursor: pointer; }
+.book__consent input { flex: none; width: 18px !important; height: 18px; min-height: 0 !important; margin: 3px 0 0; padding: 0 !important; accent-color: var(--p); }
+.book__consent a { color: var(--y); text-decoration: underline; text-underline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .steps { --fill: 100%; } }

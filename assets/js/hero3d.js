@@ -104,7 +104,7 @@ export function initHero(canvas, { onLoad } = {}) {
   ring.rotation.set(.32, 0, -.12);
   world.add(ring);
   const R = 3.3;
-  const count = mobile ? 9 : PHOTOS.length;
+  const count = mobile ? 8 : 12; // four threads, the same number of photos on each
   const cardW = 1.05, cardH = 1.32;
   const geo = new THREE.PlaneGeometry(cardW, cardH, 20, 1);
   { // bend along the ring so cards sit on the cylinder
@@ -154,16 +154,7 @@ export function initHero(canvas, { onLoad } = {}) {
     });
   }
 
-  /* ---- orbit lines around the core ---- */
-  const orbits = [[1.75, .9, .2], [2.15, -.5, .7], [2.55, .25, -.9]].map(([r, rx, rz], i) => {
-    const m = new THREE.Mesh(new THREE.TorusGeometry(r, .006, 6, 160),
-      new THREE.MeshBasicMaterial({ color: ['#feda75', '#d62976', '#4f5bd5'][i], transparent: true, opacity: .55, blending: THREE.AdditiveBlending, depthWrite: false }));
-    m.rotation.set(rx, 0, rz);
-    const dot = new THREE.Mesh(new THREE.SphereGeometry(.045, 12, 12), new THREE.MeshBasicMaterial({ color: '#fff3d6' }));
-    m.add(dot);
-    world.add(m);
-    return { m, dot, r, speed: .4 + i * .18, flash: 0 };
-  });
+  const orbits = [];
 
   /* ---- tap themes: every tap moves the photos onto a new path and swaps them for one service ---- */
   const en = () => document.documentElement.lang === 'en';
@@ -276,18 +267,51 @@ export function initHero(canvas, { onLoad } = {}) {
   }
   // card placement on each path, in the ring's space: [x, y, z, rotY, scale]
   const out = new THREE.Vector4();
-  function place(name, c, n, t, spread) {
-    const k = c.i / n, th = c.ang + turn;
+  /* ---- four threads: every photo is strung on one of them and travels along it ---- */
+  const THREADS = 4, perThread = count / THREADS;
+  // point on thread j of a layout at a ∈ [0, 2π), in the ring's space: [x, y, z] (+ rotY for the card)
+  function thread(name, j, a, t, spread) {
+    const o = j - (THREADS - 1) / 2; // -1.5 … 1.5
     switch (name) {
-      case 'wheel': { // a vertical wheel turning towards the viewer
-        const r = R * .72; return out.set(Math.sin(th) * .5, Math.sin(th) * r, Math.cos(th) * r, 0), .85; }
-      case 'helix': { const a = k * Math.PI * 4 + turn * 1.4; return out.set(Math.sin(a) * R * .78, (k - .5) * 4.2, Math.cos(a) * R * .78, a), .78; }
-      case 'wave': {
-        const cols = mobile ? 3 : 5, rows = Math.ceil(n / cols), col = c.i % cols, row = Math.floor(c.i / cols);
-        return out.set((col - (cols - 1) / 2) * 1.05, ((rows - 1) / 2 - row) * 1.3, -1.2 + Math.sin(t * 1.3 + col * .9 + row * .7) * .55, Math.sin(t * .8 + col) * .22), .74; }
-      case 'infinity': { const a = th; return out.set(Math.sin(a) * R * 1.02, Math.sin(a) * Math.cos(a) * R * .9, Math.cos(a) * R * .55, Math.sin(a) * .35), .8; }
-      default: return out.set(Math.sin(th) * R * spread, Math.sin(t * .9 + c.bob) * .12, Math.cos(th) * R * spread, th), 1 / Math.max(.85, spread * .92);
+      case 'wheel': { // four upright wheels side by side: photos roll top to bottom ("lengthwise")
+        const r = R * .56; return out.set(o * (mobile ? 1.02 : 1.3), Math.sin(a) * r, Math.cos(a) * r - .6, 0); }
+      case 'helix': { // four meridians of a globe, each turned 45° from the last
+        const r = R * .82, f = (j / THREADS) * Math.PI; return out.set(Math.sin(a) * r * Math.cos(f), Math.cos(a) * r * 1.05, Math.sin(a) * r * Math.sin(f), f + (Math.sin(a) < 0 ? Math.PI : 0)); }
+      case 'wave': { // four flat ribbons stacked like rows of a website
+        const w = mobile ? 1.9 : 2.9; return out.set(Math.sin(a) * w, -o * 1.18 + Math.sin(a * 2 + t * 1.2 + j) * .14, Math.cos(a) * .9 - 1.1, Math.sin(a) * -.25); }
+      case 'infinity': { // four nested infinity loops
+        const k = .72 + j * .12; return out.set(Math.sin(a) * R * k, Math.sin(a) * Math.cos(a) * R * .85 * k + o * .12, Math.cos(a) * R * .42, Math.sin(a) * .3); }
+      default: { // four stacked rings around the core, like the feed going round
+        const r = R * (.82 + j * .09) * spread; return out.set(Math.sin(a) * r, o * .55 + Math.sin(a * 2 + t * .6 + j) * .08, Math.cos(a) * r, a); }
     }
+  }
+  const SCALE = { ring: .82, wheel: .74, helix: .7, wave: .7, infinity: .72 };
+  function place(name, c, n, t, spread) {
+    const j = c.i % THREADS, slot = Math.floor(c.i / THREADS), dir = j % 2 ? -1 : 1;
+    const a = (slot / perThread) * Math.PI * 2 + j * .7 + dir * turn;
+    thread(name, j, a, t, spread);
+    return name === 'ring' ? SCALE.ring / Math.max(.85, spread * .92) : SCALE[name];
+  }
+  // the threads themselves: glowing lines that morph with the layout, drawn under the photos
+  const SEG = 180, threadCol = ['#feda75', '#fa7e1e', '#d62976', '#4f5bd5'];
+  const threads = threadCol.map((col) => {
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array((SEG + 1) * 3), 3));
+    const line = new THREE.Line(g, new THREE.LineBasicMaterial({ color: col, transparent: true, opacity: .6, blending: THREE.AdditiveBlending, depthWrite: false }));
+    line.renderOrder = -1; line.frustumCulled = false; ring.add(line);
+    return { line, pos: g.attributes.position, ready: false };
+  });
+  function drawThreads(name, t, spread, e) {
+    threads.forEach((th, j) => {
+      const arr = th.pos.array;
+      for (let k = 0; k <= SEG; k++) {
+        thread(name, j, (k / SEG) * Math.PI * 2, t, spread);
+        const q = k * 3;
+        if (!th.ready) { arr[q] = out.x; arr[q + 1] = out.y; arr[q + 2] = out.z; }
+        else { arr[q] += (out.x - arr[q]) * e; arr[q + 1] += (out.y - arr[q + 1]) * e; arr[q + 2] += (out.z - arr[q + 2]) * e; }
+      }
+      th.ready = true; th.pos.needsUpdate = true;
+      th.line.material.opacity = .62 + pulse * .35;
+    });
   }
 
   /* ---- embers ---- */
@@ -393,6 +417,7 @@ export function initHero(canvas, { onLoad } = {}) {
       hovered = hit ? hit.object : null;
       canvas.parentElement.style.cursor = hovered ? 'grab' : '';
     }
+    drawThreads(L, t, spread, 1 - Math.exp(-dt * (2.2 + layoutK * 5)));
     cards.forEach((c) => {
       c.u.uHover.value += ((c.mesh === hovered ? 1 : 0) - c.u.uHover.value) * .12;
       const sc = place(L, c, cards.length, t, spread);

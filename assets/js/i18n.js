@@ -14,7 +14,12 @@ const M = MONTHS.join('|'), D = DAYS.join('|'), C = Object.keys(CUR).map((c) => 
 const mo = (m) => MONTHS_EN[MONTHS.indexOf(m)], dy = (d) => DAYS_EN[DAYS.indexOf(d)];
 const time = (t, ap) => `${t} ${ap === 'ص' ? 'AM' : 'PM'}`;
 
+// "الأحد 8 نوفمبر 2026 · 10:30 ص بتوقيت السعودية" → "Sunday, 8 November 2026 · 10:30 AM Saudi time"
+const WHEN = new RegExp(`^(${D}) (\\d+) (${M}) (\\d{4}) · (\\d+:\\d\\d) (ص|م) بتوقيت السعودية$`);
+const when = (w) => { const m = w.match(WHEN); return m ? `${dy(m[1])}, ${m[2]} ${mo(m[3])} ${m[4]} · ${time(m[5], m[6])} Saudi time` : w; };
 const RULES = [
+  [/^موعدك (.+) عبر (.+)\. أرسلنا التفاصيل لفريقنا، وسيصلك رابط الاجتماع على (.+) قبل الموعد\.$/, (_, w, t, e) => `Your meeting is on ${when(w)} via ${t}. We've sent the details to our team, and the meeting link will reach ${e} before the meeting.`],
+  [/^اخترت (.+)\. لم نتمكن من الإرسال تلقائيًا،$/, (_, w) => `You picked ${when(w)}. We couldn't send it automatically,`],
   [new RegExp(`^([<\\d,.\\s–-]+?)\\s*(${C})( للوحدة)?$`), (_, n, c, u) => `${CUR[c]} ${n.trim()}${u ? ' / unit' : ''}`],
   [new RegExp(`^(${C}) مبيعات$`), (_, c) => `${CUR[c]} in sales`],
   [/^الدور (\d)$/, (_, n) => `Floor ${n}`],

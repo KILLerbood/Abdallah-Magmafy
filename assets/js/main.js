@@ -15,6 +15,9 @@ const desktop = () => innerWidth > 960;
 
 initEffects();
 
+// the privacy and terms pages open in the same language as the site
+if (document.documentElement.lang === 'en') $$('a[data-keep-lang]').forEach((a) => { a.href = a.getAttribute('href') + '?lang=en'; });
+
 // gsap is loaded with `defer`, modules run after deferred scripts, but guard anyway
 const gs = window.gsap;
 const ST = window.ScrollTrigger;
@@ -77,7 +80,8 @@ function intro() {
   gs.from('.hero__title .line > span', { yPercent: 110, duration: 1.1, ease: 'power4.out', stagger: .12 });
   gs.from('.hero .reveal-up', { y: 30, opacity: 0, duration: 1, ease: 'power3.out', stagger: .1, delay: .35 });
   gs.from('.htag', { scale: .6, opacity: 0, duration: .8, ease: 'back.out(1.8)', stagger: .15, delay: .8 });
-  gs.from('.header', { y: -40, opacity: 0, duration: .8, ease: 'power3.out', delay: .2 });
+  // animate the inside of the bar, never the fixed bar itself, so it can never be left half off the top of the screen
+  gs.from('.header__inner', { y: -16, opacity: 0, duration: .7, ease: 'power3.out', delay: .2, clearProps: 'transform,opacity' });
 }
 
 /* ---------- header ---------- */
@@ -114,11 +118,31 @@ updateSpy();
 /* ---------- scroll choreography ---------- */
 if (gs && ST && !reduced) {
   document.documentElement.classList.add('js');
+  // ScrollTrigger measures by jumping the page to the top and back; CSS smooth scrolling turns that jump
+  // into an animation, so every trigger got measured at the wrong spot (the hero stuck after scrolling back up)
+  ST.addEventListener('refreshInit', () => { document.documentElement.style.scrollBehavior = 'auto'; });
+  ST.addEventListener('refresh', () => { document.documentElement.style.scrollBehavior = ''; });
 
   // hero: scene opens up while the copy drifts away
-  ST.create({ trigger: '.hero', start: 'top top', end: 'bottom bottom', scrub: true, onUpdate: (s) => hero && hero.setProgress(s.progress) });
-  gs.to('.hero__inner', { opacity: 0, y: -80, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: '55% bottom', scrub: true } });
-  gs.to('.hero__tags, .hero__scroll, .hero__tap', { opacity: 0, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: '30% bottom', scrub: true } });
+  // hero: scene opens up while the copy drifts away. Driven straight from the scroll position (the hero
+  // is the first thing on the page), so it can never be left half-faded by a stale measurement
+  const heroEl = $('.hero'), heroInner = $('.hero__inner'), heroFade = $$('.hero__tags, .hero__scroll, .hero__tap');
+  const clamp01 = (v) => Math.min(1, Math.max(0, v));
+  let heroRaf = 0;
+  const heroScroll = () => {
+    heroRaf = 0;
+    const pinned = innerWidth > 960;
+    const len = pinned ? Math.max(1, heroEl.offsetHeight - innerHeight) : Math.max(1, heroEl.offsetHeight);
+    const y = Math.max(0, scrollY), p = clamp01(y / len);
+    hero && hero.setProgress(p);
+    const a = clamp01(y / (pinned ? len * .2 + innerHeight * .1 : len * .7));
+    heroInner.style.opacity = String(1 - a); heroInner.style.transform = a ? `translateY(${-80 * a}px)` : '';
+    const f = 1 - clamp01(y / (pinned ? innerHeight * .3 : len * .35));
+    heroFade.forEach((el) => { el.style.opacity = String(f); el.style.pointerEvents = f < .1 ? 'none' : ''; });
+  };
+  addEventListener('scroll', () => { if (!heroRaf) heroRaf = requestAnimationFrame(heroScroll); }, { passive: true });
+  addEventListener('resize', heroScroll);
+  heroScroll();
 
   // reveals
   const revealSel = '.dial, .calc__box, .head, .study__box, .cmp__wrap, .jy, .cfg, .ring__ctl, .stat, .step, .pk__box, .faq__intro, .faq details, .book, .process__intro, .film__frame, .footer__grid';
@@ -126,7 +150,15 @@ if (gs && ST && !reduced) {
   ST.batch('.reveal', { start: 'top 88%', once: true, onEnter: (els) => gs.to(els, { opacity: 1, y: 0, duration: 1, ease: 'power3.out', stagger: .08, overwrite: true }) });
 
   // process line fill
-  gs.to('.steps', { '--fill': '100%', ease: 'none', scrollTrigger: { trigger: '.steps', start: 'top 70%', end: 'bottom 60%', scrub: true } });
+  { // the rail fills as you scroll, a spark rides its tip, and each step lights up as the spark reaches it
+    const steps = $('.steps'), spark = document.createElement('span'); spark.className = 'steps__spark'; spark.setAttribute('aria-hidden', 'true'); steps.append(spark);
+    const items = $$('.step', steps);
+    ST.create({ trigger: steps, start: 'top 70%', end: 'bottom 60%', scrub: .4, onUpdate: (st) => {
+      const p = st.progress, H = steps.offsetHeight - 48;
+      steps.style.setProperty('--fill', (p * 100).toFixed(2) + '%'); steps.style.setProperty('--spark', p > .005 && p < .995 ? '1' : '0');
+      items.forEach((el) => el.classList.toggle('is-on', p * H + 24 >= el.offsetTop + 30));
+    } });
+  }
 
   // footer wordmark parallax
   gs.from('.footer__big, .pword', { yPercent: 40, opacity: 0, ease: 'none', scrollTrigger: { trigger: '.footer', start: 'top bottom', end: 'top 40%', scrub: true } });

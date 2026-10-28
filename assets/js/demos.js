@@ -384,41 +384,70 @@ function initBooking() {
   const pad = (n) => String(n).padStart(2, '0');
   const utcStamp = (d) => `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
 
+  /* spam protection for a static site: a hidden trap field, a minimum fill time, no links or code in the
+     fields, clean single-line values, and a per-browser limit. Real people never notice any of it. */
+  const LIMIT_KEY = 'mg-bookings', MAX_DAY = 2, GAP = 60e3;
+  let firstTouch = 0;
+  ['pointerdown', 'keydown', 'input'].forEach((ev) => form.addEventListener(ev, () => { firstTouch ||= Date.now(); }));
+  const clean = (v, n) => String(v || '').replace(/[\u0000-\u001f\u007f\u200b-\u200f\u202a-\u202e\u2066-\u2069]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n);
+  const LINKY = /(https?:|www\.|<|>|\[url|\b[a-z0-9-]+\.(com|net|org|io|ru|xyz|top|info|biz|link|click|site|online|shop)\b)/i;
+  const booked = () => { try { return JSON.parse(localStorage.getItem(LIMIT_KEY) || '[]').filter((t) => Date.now() - t < 864e5); } catch { return []; } };
+  const err = (m) => { note.textContent = m; note.classList.add('is-err'); };
+  const fakeDone = () => { form.classList.add('is-done'); $('#book-done').hidden = false; $('#book-done-text').textContent = 'تم استلام طلبك.'; };
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     note.classList.remove('is-err');
     const fd = new FormData(form);
+    // bots fill the hidden field or submit instantly: show them a success screen and send nothing
+    if (fd.get('website') || !firstTouch || Date.now() - firstTouch < 3000) { fakeDone(); return; }
+    const v = { name: clean(fd.get('name'), 60), email: clean(fd.get('email'), 100), phone: clean(fd.get('phone'), 20), biz: clean(fd.get('biz'), 80), topic: clean(fd.get('topic'), 60), addons: clean(fd.get('addons'), 300) };
     let bad = false;
-    ['name', 'email', 'biz'].forEach((k) => { const el = form.elements[k]; const ok = el.value.trim() && (k !== 'email' || /^\S+@\S+\.\S+$/.test(el.value)); el.classList.toggle('is-bad', !ok); if (!ok) bad = true; });
-    if (!day || !slot) { note.textContent = 'اختر اليوم والوقت من التقويم أولًا.'; note.classList.add('is-err'); return; }
-    if (bad) { note.textContent = 'من فضلك أكمل الحقول المطلوبة.'; note.classList.add('is-err'); return; }
+    const ok = {
+      name: v.name.length >= 2 && !LINKY.test(v.name),
+      email: /^[^\s@<>()"',;:]+@[^\s@<>()"',;:]+\.[a-z]{2,}$/i.test(v.email),
+      biz: v.biz.length >= 2 && !LINKY.test(v.biz),
+      phone: !v.phone || /^\+?[\d\s()-]{7,20}$/.test(v.phone),
+    };
+    Object.entries(ok).forEach(([k, good]) => { form.elements[k].classList.toggle('is-bad', !good); if (!good) bad = true; });
+    if (!day || !slot) { err('اختر اليوم والوقت من التقويم أولًا.'); return; }
+    if (bad) { err(LINKY.test(v.name + ' ' + v.biz) ? 'الروابط غير مسموحة في الحقول. اكتب الاسم واسم النشاط فقط.' : 'من فضلك أكمل الحقول المطلوبة بشكل صحيح.'); return; }
+    if (!form.elements.consent.checked) { err('من فضلك وافق على سياسة الخصوصية والشروط أولًا.'); return; }
+    const past = booked();
+    if (past.length && Date.now() - past[past.length - 1] < GAP) { err('تم إرسال حجز قبل قليل. انتظر دقيقة ثم حاول مرة أخرى.'); return; }
+    if (past.length >= MAX_DAY) { err('وصلت للحد الأقصى من الحجوزات اليوم. راسلنا على البريد لو محتاج موعد إضافي.'); return; }
     const [hh, mm] = slot.split(':').map(Number);
     const start = new Date(Date.UTC(day.getFullYear(), day.getMonth(), day.getDate(), hh - 3, mm));
     const end = new Date(start.getTime() + 30 * 60000);
     const when = `${DAYS[day.getDay()]} ${day.getDate()} ${MONTHS[day.getMonth()]} ${day.getFullYear()} · ${ar12(slot)} بتوقيت السعودية`;
     const payload = {
-      _subject: `حجز اجتماع Magmafy · ${fd.get('biz')} · ${when}`,
+      _subject: `حجز اجتماع Magmafy · ${v.biz} · ${when}`,
       _template: 'table', _captcha: 'false',
-      'الاسم': fd.get('name'), 'البريد': fd.get('email'), 'الجوال': fd.get('phone') || '-', 'النشاط': fd.get('biz'),
-      'الموضوع': fd.get('topic'), 'الإضافات': fd.get('addons') || '-', 'الموعد': when, 'نوع الاجتماع': mtype, _replyto: fd.get('email'),
+      'الاسم': v.name, 'البريد': v.email, 'الجوال': v.phone || '-', 'النشاط': v.biz,
+      'الموضوع': v.topic, 'الإضافات': v.addons || '-', 'الموعد': when, 'نوع الاجتماع': mtype, _replyto: v.email,
+      _blacklist: 'http, www., casino, crypto, bitcoin, viagra, backlinks',
     };
     const btn = $('#book-submit'); btn.disabled = true; btn.textContent = 'جارٍ تأكيد الموعد…';
     let sent = false;
     try {
       const r = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(CONFIG.bookingEmail)}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload) });
       sent = r.ok;
+      if (sent) { const h = booked(); h.push(Date.now()); try { localStorage.setItem(LIMIT_KEY, JSON.stringify(h)); } catch { /* private mode */ } }
     } catch { sent = false; }
     btn.disabled = false; btn.textContent = 'أكّد الموعد';
-    const details = `اجتماع Magmafy (${mtype}) مع ${fd.get('name')} · ${fd.get('biz')} · ${fd.get('topic')}`;
+    const details = `اجتماع Magmafy (${mtype}) مع ${v.name} · ${v.biz} · ${v.topic}`.replace(/[;,\\]/g, ' ');
     const gcal = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('اجتماع مع Magmafy')}&dates=${utcStamp(start)}/${utcStamp(end)}&details=${encodeURIComponent(details)}`;
     const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Magmafy//Booking//AR', 'BEGIN:VEVENT', `UID:${Date.now()}@magmafy`, `DTSTAMP:${utcStamp(new Date())}`, `DTSTART:${utcStamp(start)}`, `DTEND:${utcStamp(end)}`, 'SUMMARY:اجتماع مع Magmafy', `DESCRIPTION:${details}`, `ORGANIZER:mailto:${CONFIG.bookingEmail}`, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
     $('#book-gcal').href = gcal;
     $('#book-ics').href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
     if (sent) {
-      $('#book-done-text').textContent = `موعدك ${when} عبر ${mtype}. أرسلنا التفاصيل لفريقنا، وسيصلك رابط الاجتماع على ${fd.get('email')} قبل الموعد.`;
+      $('#book-done-text').textContent = `موعدك ${when} عبر ${mtype}. أرسلنا التفاصيل لفريقنا، وسيصلك رابط الاجتماع على ${v.email} قبل الموعد.`;
     } else {
       const mail = `mailto:${CONFIG.bookingEmail}?subject=${encodeURIComponent(payload._subject)}&body=${encodeURIComponent(Object.entries(payload).filter(([k]) => !k.startsWith('_')).map(([k, v]) => `${k}: ${v}`).join('\n'))}`;
-      $('#book-done-text').innerHTML = `اخترت ${when}. لم نتمكن من الإرسال تلقائيًا، <a href="${mail}" style="text-decoration:underline">اضغط هنا لإرسال الحجز بالبريد</a> وسنؤكده فورًا.`;
+      // built from DOM nodes, never HTML strings, so nothing typed in the form can become markup
+      const t = $('#book-done-text'), link = document.createElement('a');
+      link.href = mail; link.style.textDecoration = 'underline'; link.textContent = 'اضغط هنا لإرسال الحجز بالبريد';
+      t.replaceChildren(`اخترت ${when}. لم نتمكن من الإرسال تلقائيًا، `, link, ' وسنؤكده فورًا.');
     }
     form.classList.add('is-done'); $('#book-done').hidden = false;
     form.scrollIntoView({ behavior: 'smooth', block: 'center' });

@@ -3,12 +3,15 @@
 import './i18n.js';
 import { initHero } from './hero3d.js';
 import { initDemos } from './demos.js';
+import { initEffects } from './effects.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
 const desktop = () => innerWidth > 960;
+
+initEffects();
 
 // gsap is loaded with `defer`, modules run after deferred scripts, but guard anyway
 const gs = window.gsap;
@@ -102,7 +105,7 @@ if (gs && ST && !reduced) {
   gs.to('.steps', { '--fill': '100%', ease: 'none', scrollTrigger: { trigger: '.steps', start: 'top 70%', end: 'bottom 60%', scrub: true } });
 
   // footer wordmark parallax
-  gs.from('.footer__big', { yPercent: 40, opacity: 0, ease: 'none', scrollTrigger: { trigger: '.footer', start: 'top bottom', end: 'top 40%', scrub: true } });
+  gs.from('.footer__big, .pword', { yPercent: 40, opacity: 0, ease: 'none', scrollTrigger: { trigger: '.footer', start: 'top bottom', end: 'top 40%', scrub: true } });
 
   addEventListener('load', () => ST.refresh());
 }

@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Magmafy | وكالة نمو السوشيال ميديا لمعارض الأثاث والديكور</title>
+  <meta name="description" content="Magmafy وكالة نمو متخصصة في معارض الأثاث ومتاجر الديكور: صور وريلز واقعية بالذكاء الاصطناعي، إعلانات، إدارة رسائل، ومواقع ثلاثية الأبعاد تبيع قطعك.">
+  <meta name="theme-color" content="#0e0716">
+  <meta name="color-scheme" content="dark">
+  <meta property="og:title" content="Magmafy | نحوّل متابعيك إلى زوّار لمعرضك">
+  <meta property="og:description" content="وكالة نمو متخصصة في الأثاث والديكور: محتوى بالذكاء الاصطناعي، إعلانات، ومواقع ثلاثية الأبعاد.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/el-messiri-arabic-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/tajawal-arabic-500-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/vendor/gsap.min.js" defer></script>
+  <script src="assets/vendor/ScrollTrigger.min.js" defer></script>
+  <script type="importmap">{ "imports": { "three": "./assets/vendor/three.module.min.js" } }</script>
+  <script type="module" src="assets/js/main.js"></script>
+</head>
+<body>
+  <!-- preloader -->
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader__orb"><i></i><i></i><i></i></div>
+    <div class="preloader__word">Magmafy</div>
+    <div class="preloader__bar"><span id="preloader-bar"></span></div>
+    <div class="preloader__pct num" id="preloader-pct">0%</div>
+  </div>
+
+  <div class="grain" aria-hidden="true"></div>
+  <div class="cursor" aria-hidden="true"><span class="cursor__dot"></span><span class="cursor__ring"></span></div>
+
+  <!-- header -->
+  <header class="header" id="header">
+    <div class="wrap header__inner">
+      <a href="#home" class="logo" aria-label="Magmafy الرئيسية">
+        <svg class="logo__mark" viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="lg-m" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#4f5bd5"/><stop offset=".35" stop-color="#962fbf"/><stop offset=".6" stop-color="#d62976"/><stop offset=".82" stop-color="#fa7e1e"/><stop offset="1" stop-color="#feda75"/></linearGradient></defs><rect width="40" height="40" rx="12" fill="url(#lg-m)"/><path d="M10 28V13.5c0-1.2 1.5-1.8 2.3-.9L20 21l7.7-8.4c.8-.9 2.3-.3 2.3.9V28" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="30" r="2.2" fill="#fff"/></svg>
+        <span class="logo__word">Magmafy</span>
+      </a>
+      <nav class="nav" id="nav" aria-label="القائمة الرئيسية">
+        <a href="#film">في دقيقة</a>
+        <a href="#services">خدماتنا</a>
+        <a href="#study">دراسة السوق</a>
+        <a href="#journey">رحلة عميل</a>
+        <a href="#sites3d">مواقع 3D</a>
+        <a href="#pricing">باقاتنا</a>
+      </nav>
+      <a href="#contact" class="btn btn--grad btn--sm header__cta magnetic">احجز اجتماع</a>
+      <button class="burger" id="burger" aria-label="فتح القائمة" aria-expanded="false" aria-controls="nav"><span></span><span></span></button>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="home">
+      <div class="hero__pin">
+        <canvas id="hero-canvas" aria-hidden="true"></canvas>
+        <div class="hero__shade" aria-hidden="true"></div>
+        <div class="wrap hero__inner">
+          <p class="eyebrow reveal-up"><span class="eyebrow__dot"></span>وكالة نمو متخصصة في الأثاث والديكور فقط</p>
+          <h1 class="hero__title" aria-label="نحوّل متابعيك إلى زوّار لمعرضك، ومحتواك إلى مبيعات">
+            <span class="line"><span>نحوّل متابعيك إلى</span></span>
+            <span class="line"><span><em class="grad">زوّار لمعرضك</em>،</span></span>
+            <span class="line"><span>ومحتواك إلى <em class="grad">مبيعات</em></span></span>
+          </h1>
+          <p class="hero__lede reveal-up">ندرس سوقك ومنافسيك في الخليج، ننتج لقطعك صورًا وريلز واقعية بالذكاء الاصطناعي، نطلق إعلانات تصل لمن يجهّز بيته الآن، ونبني لك موقعًا ثلاثي الأبعاد يلفّ فيه العميل القطعة قبل أن يزور معرضك.</p>
+          <div class="hero__ctas reveal-up">
+            <a href="#contact" class="btn btn--grad magnetic">احجز اجتماعًا مجانيًا <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></a>
+            <a href="#film" class="btn btn--ghost magnetic"><span class="playdot" aria-hidden="true">▶</span> افهمنا في دقيقة</a>
+          </div>
+          <ul class="hero__stats reveal-up" aria-label="أرقام سريعة">
+            <li><b class="num" data-count="85" data-suffix="%">85%</b><span>اقتنعوا بالشراء بعد فيديو</span></li>
+            <li><b class="num" data-count="94" data-prefix="+" data-suffix="%">+94%</b><span>تحويل أعلى مع العرض 3D</span></li>
+            <li><b class="num" data-count="7" data-suffix="x">7x</b><span>فرصة أكبر عند الرد خلال ساعة</span></li>
+          </ul>
+        </div>
+        <div class="hero__scroll" aria-hidden="true"><span>مرّر للأسفل</span><i></i></div>
+        <div class="hero__tags" aria-hidden="true">
+          <span class="htag htag--a"><b class="num">+12.4K</b> حفظ للمنشورات</span>
+          <span class="htag htag--b"><b class="num">+40%</b> زيارات المعرض</span>
+          <span class="htag htag--c">♥ <b class="num">3,250</b> متابع جديد</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PLATFORMS MARQUEE ============ -->
+    <section class="marquee" aria-label="المنصات التي نديرها">
+      <div class="marquee__track" dir="ltr">
+        <div class="marquee__row">
+          <span>Instagram</span><i>✦</i><span>TikTok</span><i>✦</i><span>Snapchat</span><i>✦</i><span>Pinterest</span><i>✦</i><span>Facebook</span><i>✦</i><span>X</span><i>✦</i><span>LinkedIn</span><i>✦</i><span>WhatsApp</span><i>✦</i>
+        </div>
+        <div class="marquee__row" aria-hidden="true">
+          <span>Instagram</span><i>✦</i><span>TikTok</span><i>✦</i><span>Snapchat</span><i>✦</i><span>Pinterest</span><i>✦</i><span>Facebook</span><i>✦</i><span>X</span><i>✦</i><span>LinkedIn</span><i>✦</i><span>WhatsApp</span><i>✦</i>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ EXPLAINER FILM ============ -->
+    <section class="section film" id="film">
+      <div class="wrap">
+        <div class="head">
+          <p class="eyebrow"><span class="eyebrow__dot"></span>Magmafy في دقيقة</p>
+          <h2>شاهد ماذا نفعل لمعرضك، <em class="grad">من أول يوم لأول طلب</em></h2>
+          <p>فيلم قصير متحرك يشرح رحلتنا معك في ست لقطات. اضغط تشغيل، أو اختر أي لقطة.</p>
+        </div>
+        <div class="film__frame" id="film-frame">
+          <div class="film__stage" id="film-stage" aria-live="polite">
+            <!-- scene 1 -->
+            <div class="fs fs--1" data-scene="0">
+              <div class="fs1__phone">
+                <div class="fs1__top"><b>your.showroom</b><span>•••</span></div>
+                <div class="fs1__stats"><div><b class="num">312</b><small>متابع</small></div><div><b class="num">2</b><small>استفسار/أسبوع</small></div><div><b class="num">0</b><small>زيارة</small></div></div>
+                <div class="fs1__grid"><img src="assets/img/sofa-grey.jpg" alt=""><img src="assets/img/stool.jpg" alt=""><img src="assets/img/lamp.jpg" alt=""><img src="assets/img/sofa-leather.jpg" alt=""><img src="assets/img/chair-black.jpg" alt=""><img src="assets/img/sofa-green.jpg" alt=""></div>
+              </div>
+              <div class="fs1__zzz"><span>ز</span><span>ز</span><span>ز</span></div>
+            </div>
+            <!-- scene 2 -->
+            <div class="fs fs--2" data-scene="1">
+              <svg class="fs2__map" viewBox="0 0 400 260" aria-hidden="true">
+                <path class="fs2__land" d="M40 60 L150 30 L250 40 L300 90 L330 120 L360 150 L340 190 L300 215 L240 235 L180 225 L120 180 L80 130 Z"/>
+                <g class="fs2__pins">
+                  <g transform="translate(170 120)"><circle r="7"/><text y="-14">الرياض</text></g>
+                  <g transform="translate(110 150)"><circle r="6"/><text y="-12">جدة</text></g>
+                  <g transform="translate(300 120)"><circle r="6"/><text y="-12">دبي</text></g>
+                  <g transform="translate(262 100)"><circle r="5"/><text y="-11">الدوحة</text></g>
+                  <g transform="translate(215 55)"><circle r="5"/><text y="-11">الكويت</text></g>
+                  <g transform="translate(330 165)"><circle r="5"/><text y="-11">مسقط</text></g>
+                </g>
+              </svg>
+              <div class="fs2__cards">
+                <div class="fs2__card"><small>منافس أ</small><b>ينشر 3 مرات/أسبوع</b><i style="--w:40%"></i></div>
+                <div class="fs2__card"><small>منافس ب</small><b>يرد بعد 6 ساعات</b><i style="--w:25%"></i></div>
+                <div class="fs2__card fs2__card--you"><small>أنت مع Magmafy</small><b>يوميًا · رد خلال دقائق</b><i style="--w:92%"></i></div>
+              </div>
+            </div>
+            <!-- scene 3 -->
+            <div class="fs fs--3" data-scene="2">
+              <div class="fs3__wrap">
+                <img class="fs3__before" src="assets/img/sofa-leather.jpg" alt="">
+                <img class="fs3__after" src="assets/img/interior-sun.jpg" alt="">
+                <span class="fs3__scan"></span>
+                <span class="fs3__label">صورة جوال ← مشهد AI واقعي</span>
+              </div>
+            </div>
+            <!-- scene 4 -->
+            <div class="fs fs--4" data-scene="3">
+              <div class="fs4__target"><i></i><i></i><i></i><b>من يجهّز بيته الآن</b></div>
+              <div class="fs4__people"><span>عرسان جدد</span><span>عائلة تنتقل</span><span>مكتب جديد</span><span>تجديد ديكور</span></div>
+              <div class="fs4__ad"><img src="assets/img/living-soft.jpg" alt=""><b>احجز زيارة للمعرض</b></div>
+            </div>
+            <!-- scene 5 -->
+            <div class="fs fs--5" data-scene="4">
+              <div class="fs5__browser"><div class="fs5__bar"><i></i><i></i><i></i><span>your-showroom.sa</span></div>
+                <div class="fs5__body"><div class="fs5__cube"><img src="assets/img/sofa-orange.jpg" alt=""><img src="assets/img/sofa-green.jpg" alt=""><img src="assets/img/sofa-grey.jpg" alt=""><img src="assets/img/sofa-leather.jpg" alt=""></div>
+                <div class="fs5__sw"><i style="--c:#c2410c"></i><i style="--c:#166534"></i><i style="--c:#64748b"></i><i style="--c:#92400e"></i></div></div></div>
+            </div>
+            <!-- scene 6 -->
+            <div class="fs fs--6" data-scene="5">
+              <div class="fs6__kpis"><div><b class="num" data-to="186">0</b><small>استفسار/شهر</small></div><div><b class="num" data-to="64">0</b><small>زيارة معرض</small></div><div><b class="num" data-to="8640">0</b><small>متابع</small></div></div>
+              <svg class="fs6__chart" viewBox="0 0 300 100" preserveAspectRatio="none" aria-hidden="true"><path d="M300 92 C260 90 240 80 210 74 S160 60 130 46 S70 24 0 8" fill="none" stroke="url(#dash-l)" stroke-width="4" stroke-linecap="round"/></svg>
+              <a href="#contact" class="btn btn--grad fs6__cta">احجز اجتماعك</a>
+            </div>
+            <p class="film__caption" id="film-caption">معرضك عنده قطع رائعة… لكن الحساب صامت.</p>
+            <button type="button" class="film__play" id="film-play" aria-label="تشغيل الفيلم"><span>▶</span></button>
+          </div>
+          <div class="film__ctl">
+            <button type="button" class="film__toggle" id="film-toggle" aria-label="تشغيل أو إيقاف">▶</button>
+            <ol class="film__chapters" id="film-chapters">
+              <li><button type="button" data-s="0"><i><span></span></i>المشكلة</button></li>
+              <li><button type="button" data-s="1"><i><span></span></i>دراسة السوق</button></li>
+              <li><button type="button" data-s="2"><i><span></span></i>محتوى AI</button></li>
+              <li><button type="button" data-s="3"><i><span></span></i>الإعلانات</button></li>
+              <li><button type="button" data-s="4"><i><span></span></i>موقع 3D</button></li>
+              <li><button type="button" data-s="5"><i><span></span></i>النتيجة</button></li>
+            </ol>
+            <span class="film__time num" id="film-time">0:00 / 0:48</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SERVICES (horizontal) ============ -->
+    <section class="services" id="services">
+      <div class="services__pin">
+        <div class="wrap services__head">
+          <div>
+            <p class="eyebrow"><span class="eyebrow__dot"></span>خدماتنا</p>
+            <h2>كل ما تحتاجه علامة الأثاث <em class="grad">لتبيع على السوشيال</em>، في مكان واحد</h2>
+          </div>
+          <p class="services__sub">لا نبيعك منشورات. كل خدمة مربوطة بنتيجة تراها في تقريرك الشهري.</p>
+        </div>
+        <div class="services__viewport">
+          <div class="services__strip" id="services-strip">
+            <article class="svc">
+              <div class="svc__img"><img src="assets/img/analytics.jpg" alt="حاسوب يعرض تقارير وتحليلات" loading="lazy"></div>
+              <div class="svc__body"><span class="svc__n num">01</span><h3>دراسة السوق وتحليل المنافسين</h3><p>نرصد منافسيك في مدينتك والخليج: أسعارهم، عروضهم، ماذا ينشرون، وكيف يردون. ونعطيك الفجوات التي تقدر تكسب منها.</p><p class="svc__res"><span>تستلم</span>تقرير منافسين وخريطة فرص خلال 10 أيام عمل</p></div>
+            </article>
+            <article class="svc">
+              <div class="svc__img"><img src="assets/img/living-mini.jpg" alt="صالة بسيطة بكنبة سوداء" loading="lazy"></div>
+              <div class="svc__body"><span class="svc__n num">02</span><h3>مواقع وصفحات هبوط للإعلانات</h3><p>صفحة سريعة لكل حملة أو تشكيلة: صور حقيقية، سعر أو «اطلب السعر»، وزر حجز زيارة. مصممة لتحوّل الضغطة إلى عميل.</p><p class="svc__res"><span>النتيجة</span>تكلفة أقل لكل طلب من نفس ميزانية الإعلان</p></div>
+            </article>
+            <article class="svc">
+              <div class="svc__img"><img src="assets/img/living-boho.jpg" alt="صالة بأريكة جلدية ونباتات" loading="lazy"></div>
+              <div class="svc__body"><span class="svc__n num">03</span><h3>صور وريلز وستوري واقعية بالذكاء الاصطناعي</h3><p>نحوّل صور منتجاتك، حتى لو كانت من الجوال، إلى مشاهد واقعية داخل غرف مصممة بعناية. بدون جلسات تصوير مكلفة.</p><p class="svc__res"><span>النتيجة</span>محتوى أكثر وأسرع، وحفظ ومشاهدات أعلى</p></div>
+            </article>
+            <article class="svc">
+              <div class="svc__img"><img src="assets/img/living-teal.jpg" alt="صالة بأريكة رمادية وجدار أبيض" loading="lazy"></div>
+              <div class="svc__body"><span class="svc__n num">04</span><h3>إدارة الحسابات وخطة محتوى موسمية</h3><p>تقويم شهري مبني على مواسم بيع الأثاث: رمضان والأعياد، موسم الزواج، العودة للمدارس، والجمعة البيضاء.</p><p class="svc__res"><span>النتيجة</span>علامتك أول ما يتذكره العميل حين يقرر التأثيث</p></div>
+            </article>
+            <article class="svc">
+              <div class="svc__img"><img src="assets/img/sofa-green.jpg" alt="أريكة مخملية خضراء" loading="lazy"></div>
+              <div class="svc__body"><span class="svc__n num">05</span><h3>إدارة الإعلانات المدفوعة</h3><p>حملات على Meta وTikTok وSnapchat وPinterest: إعلانات كتالوج، حملات زيارة المعرض، وإعادة استهداف من شاهد ولم يشترِ.</p><p class="svc__res"><span>النتيجة</span>تكلفة أقل لكل طلب، وزيارات قابلة للقياس</p></div>
+            </article>
+            <article class="svc svc--3d">
+              <div class="svc__img"><img src="assets/img/chair-yellow.jpg" alt="كرسي أصفر بجوار جدار أبيض" loading="lazy"><span class="svc__badge">جديد</span></div>
+              <div class="svc__body"><span class="svc__n num">06</span><h3>مواقع ومعارض ثلاثية الأبعاد</h3><p>متجر أونلاين يلفّ فيه العميل الكنبة 360° ويغيّر لون القماش، ثم يحجز زيارة أو يطلب السعر من نفس الصفحة.</p><p class="svc__res"><span>النتيجة</span>ثقة أعلى قبل الشراء، ومرتجعات أقل</p></div>
+            </article>
+            <article class="svc">
+              <div class="svc__img"><img src="assets/img/dining.jpg" alt="طاولة طعام بكراسي خضراء" loading="lazy"></div>
+              <div class="svc__body"><span class="svc__n num">07</span><h3>إدارة الرسائل والتعليقات</h3><p>نرد على أسئلة الأسعار والمقاسات والألوان ومدة التوصيل بسرعة وبصوت علامتك، ونحوّل كل استفسار إلى موعد أو طلب.</p><p class="svc__res"><span>النتيجة</span>استفسارات أقل ضياعًا، ومبيعات أكثر من الرسائل</p></div>
+            </article>
+            <article class="svc">
+              <div class="svc__img"><img src="assets/img/dashboard.jpg" alt="شاشة تعرض رسومًا بيانية" loading="lazy"></div>
+              <div class="svc__body"><span class="svc__n num">08</span><h3>تحليل الأداء والتقارير الشهرية</h3><p>تقرير واضح بلا مصطلحات: أي القطع جذبت الاهتمام، وكم استفسارًا وزيارة وطلبًا جاء من السوشيال، وما خطوتنا القادمة.</p><p class="svc__res"><span>النتيجة</span>قرارات مبنية على بيانات حقيقية</p></div>
+            </article>
+            <div class="svc svc--end">
+              <p>جاهز تشوف<br>ده كله على<br><em class="grad">عميل حقيقي؟</em></p>
+              <a href="#journey" class="btn btn--grad magnetic">ابدأ الرحلة</a>
+            </div>
+          </div>
+        </div>
+        <div class="wrap services__progress" aria-hidden="true"><span id="services-bar"></span></div>
+      </div>
+    </section>
+
+    <!-- ============ MARKET STUDY ============ -->
+    <section class="section study" id="study">
+      <div class="wrap">
+        <div class="head">
+          <p class="eyebrow"><span class="eyebrow__dot"></span>دراسة السوق وتحليل المنافسين</p>
+          <h2>قبل أي منشور، نعرف <em class="grad">منافسك أكثر مما يعرف نفسه</em></h2>
+          <p>نسلّمك تقريرًا واضحًا عن سوقك: من ينافسك، بكم يبيع، ماذا ينشر، كم يأخذ ليرد، وأين الفجوة التي نهجم منها. اختر دولة لتشاهد شكل التقرير.</p>
+        </div>
+        <div class="study__box">
+          <div class="study__countries" role="tablist" aria-label="اختر الدولة" id="study-countries">
+            <button role="tab" aria-selected="true" data-c="sa">🇸🇦 السعودية</button>
+            <button role="tab" aria-selected="false" data-c="ae">🇦🇪 الإمارات</button>
+            <button role="tab" aria-selected="false" data-c="qa">🇶🇦 قطر</button>
+            <button role="tab" aria-selected="false" data-c="kw">🇰🇼 الكويت</button>
+            <button role="tab" aria-selected="false" data-c="bh">🇧🇭 البحرين</button>
+            <button role="tab" aria-selected="false" data-c="om">🇴🇲 عُمان</button>
+          </div>
+          <div class="study__grid">
+            <div class="study__report">
+              <div class="study__rhead"><b>تقرير المنافسين · <span id="study-city">الرياض</span></b><span class="pill">عينة توضيحية</span></div>
+              <div class="study__tablewrap">
+                <table class="study__table">
+                  <thead><tr><th>المنافس</th><th>سعر كنبة 3 مقاعد</th><th>نشر أسبوعي</th><th>زمن الرد</th><th>عرض 3D</th></tr></thead>
+                  <tbody id="study-rows"></tbody>
+                </table>
+              </div>
+              <div class="study__bars" id="study-bars"></div>
+            </div>
+            <div class="study__side">
+              <div class="study__gaps">
+                <h3>الفجوات التي نكسب منها</h3>
+                <ul id="study-gaps"></ul>
+              </div>
+              <div class="study__fact">
+                <b class="num grad">$13.2B</b>
+                <p>حجم متوقع لسوق الأثاث أونلاين في السعودية بحلول 2034، من 2.7 مليار دولار في 2025 (نمو سنوي 19%).</p>
+                <a href="https://www.imarcgroup.com/saudi-arabia-online-furniture-market" target="_blank" rel="noopener noreferrer">المصدر: IMARC Group</a>
+              </div>
+            </div>
+          </div>
+          <ul class="study__deliver">
+            <li><b>1</b>قائمة المنافسين المباشرين في مدينتك</li>
+            <li><b>2</b>مقارنة الأسعار والعروض والتقسيط</li>
+            <li><b>3</b>تحليل محتواهم وإعلاناتهم النشطة</li>
+            <li><b>4</b>اختبار سرعة ردهم كعميل متخفي</li>
+            <li><b>5</b>خريطة فرص وخطة 90 يومًا</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ COMPARE ============ -->
+    <section class="section compare" id="compare">
+      <div class="wrap">
+        <div class="head">
+          <p class="eyebrow"><span class="eyebrow__dot"></span>لماذا Magmafy؟</p>
+          <h2>درسنا وكالات الخليج. <em class="grad">هذا ما لا يقدمه غيرنا مجتمعًا</em></h2>
+          <p>أغلب الوكالات في السعودية والإمارات وقطر والكويت عامة تخدم كل القطاعات، واستوديوهات 3D تصنع الصور فقط ولا تسوّق، والمستقلون يديرون الإعلانات بدون محتوى ولا موقع. نحن جمعنا كل ذلك لقطاع واحد.</p>
+        </div>
+        <div class="cmp__wrap">
+          <table class="cmp">
+            <thead><tr><th></th><th class="cmp__us"><span>Magmafy</span></th><th>وكالة سوشيال عامة</th><th>استوديو 3D</th><th>مستقل إعلانات</th></tr></thead>
+            <tbody>
+              <tr><th>متخصصون في الأثاث والديكور فقط</th><td class="y">✓</td><td class="n">✕</td><td class="p">جزئي</td><td class="p">جزئي</td></tr>
+              <tr><th>دراسة سوق وتحليل منافسين بالأسعار</th><td class="y">✓</td><td class="p">نادرًا</td><td class="n">✕</td><td class="n">✕</td></tr>
+              <tr><th>صور وريلز AI من صور الجوال</th><td class="y">✓</td><td class="p">جزئي</td><td class="p">رندر فقط</td><td class="n">✕</td></tr>
+              <tr><th>موقع أو معرض ثلاثي الأبعاد</th><td class="y">✓</td><td class="n">✕</td><td class="p">بدون تسويق</td><td class="n">✕</td></tr>
+              <tr><th>إعلانات كتالوج وزيارة معرض</th><td class="y">✓</td><td class="y">✓</td><td class="n">✕</td><td class="y">✓</td></tr>
+              <tr><th>إدارة الرسائل وتحويلها لمواعيد</th><td class="y">✓</td><td class="p">جزئي</td><td class="n">✕</td><td class="n">✕</td></tr>
+              <tr><th>محتوى عربي أصيل بلهجة السوق</th><td class="y">✓</td><td class="y">✓</td><td class="n">✕</td><td class="p">بالاستعانة بغيره</td></tr>
+              <tr><th>تقرير بالاستفسارات والزيارات لا الإعجابات</th><td class="y">✓</td><td class="p">جزئي</td><td class="n">✕</td><td class="y">✓</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="fine center">مقارنة عامة بناءً على مراجعتنا لمواقع وكالات في السعودية والإمارات وقطر والكويت في أكتوبر 2026.</p>
+      </div>
+    </section>
+
+    <!-- ============ JOURNEY ============ -->
+    <section class="section journey" id="journey">
+      <div class="wrap">
+        <div class="head">
+          <p class="eyebrow"><span class="eyebrow__dot"></span>رحلة عميل · مثال توضيحي</p>
+          <h2>من حساب صامت إلى <em class="grad">معرض مزدحم</em> في ستة أشهر</h2>
+          <p>تابع معنا «دار ليفينج»، معرض أثاث عائلي صغير، خطوة بخطوة. كل خطوة تجربة تقدر تلعب بيها بنفسك.</p>
+        </div>
+
+        <div class="jy" id="jy">
+          <ol class="jy__tabs" role="tablist" aria-label="مراحل الرحلة">
+            <li><button role="tab" aria-selected="true" aria-controls="jy-1" id="jt-1"><b class="num">01</b>نفهم علامتك</button></li>
+            <li><button role="tab" aria-selected="false" aria-controls="jy-2" id="jt-2" tabindex="-1"><b class="num">02</b>صور AI</button></li>
+            <li><button role="tab" aria-selected="false" aria-controls="jy-3" id="jt-3" tabindex="-1"><b class="num">03</b>خطة المحتوى</button></li>
+            <li><button role="tab" aria-selected="false" aria-controls="jy-4" id="jt-4" tabindex="-1"><b class="num">04</b>الإعلانات</button></li>
+            <li><button role="tab" aria-selected="false" aria-controls="jy-5" id="jt-5" tabindex="-1"><b class="num">05</b>الرسائل</button></li>
+            <li><button role="tab" aria-selected="false" aria-controls="jy-6" id="jt-6" tabindex="-1"><b class="num">06</b>النتائج</button></li>
+          </ol>
+          <div class="jy__progress" aria-hidden="true"><span id="jy-bar"></span></div>
+
+          <div class="jy__panels">
+            <!-- 1 -->
+            <div class="jy__panel is-on" role="tabpanel" id="jy-1" aria-labelledby="jt-1">
+              <div class="jy__text">
+                <h3>الوضع اليوم: قطع جميلة، وحساب لا يبيع</h3>
+                <p>نبدأ بجلسة اكتشاف: منتجاتك، فئتك السعرية، منافسوك، ومين عميلك الحقيقي. اضغط على كل شخصية لتعرف بماذا يفكر.</p>
+                <ul class="jy__now">
+                  <li><b class="num">312</b>متابع على إنستجرام</li>
+                  <li><b class="num">2</b>استفسار في الأسبوع</li>
+                  <li><b class="num">0</b>زيارة معرض من السوشيال</li>
+                </ul>
+              </div>
+              <div class="jy__demo">
+                <div class="persona-card" id="persona">
+                  <div class="persona-card__top"><span class="persona-card__av" id="persona-av">س</span><div><b id="persona-name">سارة ومحمد، 27</b><small id="persona-role">عرسان جدد · يجهّزون أول بيت</small></div></div>
+                  <blockquote id="persona-quote">«عايزين صالة شيك بميزانية معقولة، ومحتاجين نشوف القطعة في بيت حقيقي قبل ما نقرر.»</blockquote>
+                  <div class="persona-card__meta"><span>أين يبحث؟</span><b id="persona-where">Instagram · Pinterest</b></div>
+                  <div class="persona-card__meta"><span>ما الذي يقنعه؟</span><b id="persona-hook">ريلز للغرفة كاملة + تقسيط</b></div>
+                </div>
+                <div class="persona-pick" role="group" aria-label="اختر شخصية">
+                  <button type="button" aria-pressed="true" data-p="0">العرسان</button>
+                  <button type="button" aria-pressed="false" data-p="1">عائلة تنتقل</button>
+                  <button type="button" aria-pressed="false" data-p="2">مدير مكتب</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2 -->
+            <div class="jy__panel" role="tabpanel" id="jy-2" aria-labelledby="jt-2" hidden>
+              <div class="jy__text">
+                <h3>من صورة جوال إلى مشهد يُحفظ ويُشارك</h3>
+                <p>نأخذ صورة القطعة كما هي، ونضعها بالذكاء الاصطناعي داخل غرفة مصممة، مع الحفاظ على شكلها وخامتها ولونها الحقيقي. اسحب الخط لتقارن.</p>
+                <div class="jy__chips" role="group" aria-label="اختر قطعة">
+                  <button type="button" aria-pressed="true" data-ba="0">الكنبة الجلد</button>
+                  <button type="button" aria-pressed="false" data-ba="1">الكرسي الأصفر</button>
+                  <button type="button" aria-pressed="false" data-ba="2">الكنبة الرمادية</button>
+                </div>
+              </div>
+              <div class="jy__demo">
+                <div class="ba" id="ba" style="--x:50%">
+                  <img class="ba__after" id="ba-after" src="assets/img/interior-sun.jpg" alt="بعد: الكنبة داخل صالة مشمسة">
+                  <div class="ba__before"><img id="ba-before" src="assets/img/sofa-leather.jpg" alt="قبل: صورة منتج عادية للكنبة"></div>
+                  <span class="ba__tag ba__tag--b">قبل · صورة جوال</span>
+                  <span class="ba__tag ba__tag--a">بعد · مشهد AI</span>
+                  <div class="ba__handle" aria-hidden="true"><i></i></div>
+                  <input class="ba__range" type="range" min="0" max="100" value="50" aria-label="مقارنة قبل وبعد">
+                </div>
+              </div>
+            </div>
+
+            <!-- 3 -->
+            <div class="jy__panel" role="tabpanel" id="jy-3" aria-labelledby="jt-3" hidden>
+              <div class="jy__text">
+                <h3>تقويم مبني على مواسم بيع الأثاث</h3>
+                <p>كل يوم له هدف: إلهام، منتج، عرض، أو قصة عميل. اضغط على أي يوم في التقويم لتشاهد المنشور.</p>
+                <ul class="cal__legend"><li class="t-insp">إلهام</li><li class="t-prod">منتج</li><li class="t-offer">عرض</li><li class="t-story">قصة عميل</li></ul>
+              </div>
+              <div class="jy__demo jy__demo--cal">
+                <div class="cal" id="cal">
+                  <div class="cal__head"><b>نوفمبر · موسم الجمعة البيضاء</b><span class="pill">12 منشور</span></div>
+                  <div class="cal__dow"><span>س</span><span>ح</span><span>ن</span><span>ث</span><span>ر</span><span>خ</span><span>ج</span></div>
+                  <div class="cal__grid" id="cal-grid"></div>
+                </div>
+                <article class="igpost" id="cal-post">
+                  <div class="igpost__head"><span class="igpost__av">DL</span><b>dar.living</b><span class="igpost__type" id="cal-type">ريل</span></div>
+                  <div class="igpost__media"><img id="cal-img" src="assets/img/living-cream.jpg" alt=""><span class="igpost__over" id="cal-over">5 أفكار لصالة دافئة</span></div>
+                  <div class="igpost__actions"><span>♡</span><span>◌</span><span>➤</span><span class="igpost__save">▢</span></div>
+                  <p class="igpost__cap" id="cal-cap"><b>dar.living</b> الصالة اللي بتحضن العيلة كلها. اسحب للآخر واختار المفضلة 👇</p>
+                </article>
+              </div>
+            </div>
+
+            <!-- 4 -->
+            <div class="jy__panel" role="tabpanel" id="jy-4" aria-labelledby="jt-4" hidden>
+              <div class="jy__text">
+                <h3>إعلان واحد، ثلاث رسائل لثلاثة جماهير</h3>
+                <p>نفس القطعة تُباع بطريقة مختلفة لكل جمهور. اختر الجمهور والهدف وشاهد الإعلان يتغير.</p>
+                <div class="adctl">
+                  <span>الجمهور</span>
+                  <div class="jy__chips" role="group" aria-label="الجمهور">
+                    <button type="button" aria-pressed="true" data-aud="0">عرسان جدد</button>
+                    <button type="button" aria-pressed="false" data-aud="1">عائلات</button>
+                    <button type="button" aria-pressed="false" data-aud="2">مكاتب وشركات</button>
+                  </div>
+                  <span>الهدف</span>
+                  <div class="jy__chips" role="group" aria-label="الهدف">
+                    <button type="button" aria-pressed="true" data-goal="0">زيارة المعرض</button>
+                    <button type="button" aria-pressed="false" data-goal="1">رسائل واتساب</button>
+                    <button type="button" aria-pressed="false" data-goal="2">كتالوج</button>
+                  </div>
+                </div>
+              </div>
+              <div class="jy__demo jy__demo--ad">
+                <article class="igpost igpost--ad" id="ad">
+                  <div class="igpost__head"><span class="igpost__av">DL</span><div><b>dar.living</b><small>إعلان ممول</small></div></div>
+                  <div class="igpost__media"><img id="ad-img" src="assets/img/living-soft.jpg" alt=""><span class="igpost__over" id="ad-over">أول بيت؟ نجهّز صالتك كاملة</span></div>
+                  <div class="igpost__cta"><span id="ad-cta">احجز زيارة للمعرض</span><b>‹</b></div>
+                  <p class="igpost__cap" id="ad-cap">باقة العرسان: صالة + سفرة + غرفة نوم، تقسيط حتى 12 شهر وتركيب مجاني.</p>
+                </article>
+                <div class="adstats">
+                  <div><small>الوصول المتوقع</small><b class="num" id="ad-reach">48,000</b></div>
+                  <div><small>تكلفة النتيجة</small><b class="num" id="ad-cpl">18 ر.س</b></div>
+                  <div><small>النتائج / شهر</small><b class="num" id="ad-res">160</b></div>
+                  <p class="fine">أرقام توضيحية لميزانية 3,000 ر.س شهريًا</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5 -->
+            <div class="jy__panel" role="tabpanel" id="jy-5" aria-labelledby="jt-5" hidden>
+              <div class="jy__text">
+                <h3>كل رسالة فرصة. ولا رسالة تضيع</h3>
+                <p>نرد بصوت علامتك على أسئلة السعر والمقاس والتوصيل، ونقود المحادثة إلى موعد زيارة. اختر سؤالًا وشاهد الرد.</p>
+                <ul class="jy__now jy__now--sm">
+                  <li><b class="num">&lt; 15 د</b>متوسط زمن الرد</li>
+                  <li><b class="num">7 أيام</b>في الأسبوع</li>
+                </ul>
+              </div>
+              <div class="jy__demo">
+                <div class="dm" id="dm">
+                  <div class="dm__head"><span class="igpost__av">DL</span><div><b>dar.living</b><small>يرد عادةً خلال دقائق</small></div></div>
+                  <div class="dm__body" id="dm-body" aria-live="polite"></div>
+                  <div class="dm__quick" id="dm-quick">
+                    <button type="button" data-q="0">كم سعر الكنبة الجلد؟</button>
+                    <button type="button" data-q="1">في ألوان تانية؟</button>
+                    <button type="button" data-q="2">التوصيل بياخد قد إيه؟</button>
+                    <button type="button" data-q="3">ممكن أشوفها في المعرض؟</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 6 -->
+            <div class="jy__panel" role="tabpanel" id="jy-6" aria-labelledby="jt-6" hidden>
+              <div class="jy__text">
+                <h3>وبعد ستة أشهر؟ الأرقام بتتكلم</h3>
+                <p>حرّك الشريط لتشاهد تطور الحساب شهرًا بشهر. قرار شراء الأثاث يأخذ وقتًا، لذلك تتضح المبيعات بين الشهر الثالث والسادس.</p>
+                <label class="month">
+                  <span>الشهر <b class="num" id="m-val">6</b></span>
+                  <input type="range" id="m-range" min="1" max="6" value="6" aria-label="الشهر بعد البداية">
+                </label>
+                <p class="fine">أرقام توضيحية لمثال، وليست نتائج عميل حقيقي.</p>
+              </div>
+              <div class="jy__demo">
+                <div class="dash" id="dash">
+                  <div class="dash__kpis">
+                    <div><small>المتابعون</small><b class="num" id="k-f">8,640</b></div>
+                    <div><small>استفسارات / شهر</small><b class="num" id="k-i">186</b></div>
+                    <div><small>زيارات المعرض</small><b class="num" id="k-v">64</b></div>
+                    <div><small>تكلفة الطلب</small><b class="num" id="k-c">21 ر.س</b></div>
+                  </div>
+                  <svg class="dash__chart" viewBox="0 0 320 130" preserveAspectRatio="none" aria-hidden="true">
+                    <defs>
+                      <linearGradient id="dash-l" x1="1" x2="0"><stop offset="0" stop-color="#feda75"/><stop offset=".4" stop-color="#fa7e1e"/><stop offset=".7" stop-color="#d62976"/><stop offset="1" stop-color="#962fbf"/></linearGradient>
+                      <linearGradient id="dash-a" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#d62976" stop-opacity=".45"/><stop offset="1" stop-color="#d62976" stop-opacity="0"/></linearGradient>
+                    </defs>
+                    <g class="dash__grid"><line x1="0" x2="320" y1="30" y2="30"/><line x1="0" x2="320" y1="65" y2="65"/><line x1="0" x2="320" y1="100" y2="100"/></g>
+                    <path id="dash-area" fill="url(#dash-a)"/>
+                    <path id="dash-line" fill="none" stroke="url(#dash-l)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle id="dash-dot" r="5" fill="#feda75"/>
+                  </svg>
+                  <div class="dash__months num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 3D CONFIGURATOR ============ -->
+    <section class="section configurator" id="sites3d">
+      <div class="wrap">
+        <div class="head">
+          <p class="eyebrow"><span class="eyebrow__dot"></span>مواقع ومعارض ثلاثية الأبعاد</p>
+          <h2>خلّي عميلك <em class="grad">يلفّ الكنبة</em> قبل ما يزور المعرض</h2>
+          <p>هذا مثال حي لما نبنيه لعملائنا: اسحب لتدوير القطعة، غيّر القماش والأرجل، وشاهد السعر يتحدث فورًا.</p>
+        </div>
+        <div class="cfg">
+          <div class="cfg__stage" id="cfg-stage">
+            <canvas id="cfg-canvas" aria-label="عرض ثلاثي الأبعاد لكنبة يمكن تدويره"></canvas>
+            <span class="cfg__hint" aria-hidden="true">⟲ اسحب للتدوير</span>
+            <span class="cfg__badge">عرض 360°</span>
+          </div>
+          <div class="cfg__panel">
+            <p class="cfg__brand">dar.living · مجموعة «سَكَن»</p>
+            <h3 id="cfg-name">كنبة سَكَن · 3 مقاعد</h3>
+            <p class="cfg__price"><b class="num" id="cfg-price">7,450</b> ر.س <small>أو <span class="num" id="cfg-month">621</span> ر.س / شهر</small></p>
+            <div class="cfg__group">
+              <span>القماش: <b id="cfg-fabric-name">مخمل زيتوني</b></span>
+              <div class="swatches" id="cfg-fabrics" role="radiogroup" aria-label="لون القماش"></div>
+            </div>
+            <div class="cfg__group">
+              <span>الأرجل</span>
+              <div class="jy__chips" id="cfg-legs" role="radiogroup" aria-label="الأرجل">
+                <button type="button" role="radio" aria-checked="true" data-leg="0">خشب جوز</button>
+                <button type="button" role="radio" aria-checked="false" data-leg="1">معدن ذهبي</button>
+                <button type="button" role="radio" aria-checked="false" data-leg="2">أسود مطفي</button>
+              </div>
+            </div>
+            <div class="cfg__group">
+              <span>المقاس</span>
+              <div class="jy__chips" id="cfg-size" role="radiogroup" aria-label="المقاس">
+                <button type="button" role="radio" aria-checked="false" data-size="0">مقعدين</button>
+                <button type="button" role="radio" aria-checked="true" data-size="1">3 مقاعد</button>
+                <button type="button" role="radio" aria-checked="false" data-size="2">4 مقاعد</button>
+              </div>
+            </div>
+            <div class="cfg__actions">
+              <button type="button" class="btn btn--grad" id="cfg-book">احجز زيارة لتجربتها</button>
+              <button type="button" class="btn btn--ghost" id="cfg-quote">اطلب عرض سعر</button>
+            </div>
+            <p class="cfg__toast" id="cfg-toast" role="status"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MINI SITES 3D CAROUSEL ============ -->
+    <section class="section minis" id="minis">
+      <div class="wrap">
+        <div class="head">
+          <p class="eyebrow"><span class="eyebrow__dot"></span>مواقع صغيرة شغّالة</p>
+          <h2>أربعة مواقع، <em class="grad">جرّبها بنفسك</em></h2>
+          <p>كل شاشة هنا موقع حقيقي يشتغل: أضف للسلة، فلتر المنتجات، احجز موعد، أو اطلب عرض سعر. لفّ الدائرة واختر.</p>
+        </div>
+      </div>
+      <div class="ring" id="ring">
+        <div class="ring__stage" id="ring-stage"></div>
+      </div>
+      <div class="wrap ring__ctl">
+        <button type="button" class="ring__btn" id="ring-next" aria-label="الموقع التالي">›</button>
+        <ul class="ring__dots" id="ring-dots" aria-label="اختر موقعًا"></ul>
+        <button type="button" class="ring__btn" id="ring-prev" aria-label="الموقع السابق">‹</button>
+      </div>
+    </section>
+
+    <!-- ============ MARKET ============ -->
+    <section class="section market" id="market">
+      <div class="wrap">
+        <div class="head">
+          <p class="eyebrow"><span class="eyebrow__dot"></span>أرقام السوق</p>
+          <h2>ماذا تقول الدراسات عن <em class="grad">المحتوى الذي يبيع الأثاث</em>؟</h2>
+          <p>أرقام منشورة من دراسات وتقارير دولية، وبنينا خدماتنا حولها. كل رقم معه مصدره.</p>
+        </div>
+        <div class="stats">
+          <article class="stat tilt"><img src="assets/img/living-boho.jpg" alt="" loading="lazy"><div class="stat__body"><span class="pill">ريلز وفيديو قصير</span><b class="num grad" data-count="85" data-suffix="%">85%</b><h3>من المستهلكين اقتنعوا بشراء منتج بعد مشاهدة فيديو عنه</h3><a href="https://wyzowl.com/video-marketing-statistics/" target="_blank" rel="noopener noreferrer">المصدر: Wyzowl، State of Video Marketing</a></div></article>
+          <article class="stat tilt"><img src="assets/img/living-calm.jpg" alt="" loading="lazy"><div class="stat__body"><span class="pill">منشورات الكاروسيل</span><b class="num grad" data-count="49" data-prefix="+" data-suffix="%">+49%</b><h3>تفاعل أعلى من منشورات الصورة الواحدة على إنستجرام</h3><a href="https://www.socialinsider.io/blog/instagram-carousel-posts-study/" target="_blank" rel="noopener noreferrer">المصدر: Socialinsider</a></div></article>
+          <article class="stat tilt"><img src="assets/img/chair-yellow.jpg" alt="" loading="lazy"><div class="stat__body"><span class="pill">عرض 3D وواقع معزز</span><b class="num grad" data-count="94" data-prefix="+" data-suffix="%">+94%</b><h3>زيادة في التحويل مقارنة بالاعتماد على الصور وحدها</h3><a href="https://www.shopify.com/ca/blog/3d-model-products" target="_blank" rel="noopener noreferrer">المصدر: Shopify</a></div></article>
+          <article class="stat tilt"><img src="assets/img/living-cream.jpg" alt="" loading="lazy"><div class="stat__body"><span class="pill">محتوى العملاء</span><b class="num grad" data-count="5" data-suffix="x">5x</b><h3>نسبة نقر أعلى للإعلانات التي تستخدم محتوى العملاء</h3><a href="https://nosto.com/?p=42168" target="_blank" rel="noopener noreferrer">المصدر: Salesforce عبر Nosto</a></div></article>
+          <article class="stat tilt"><img src="assets/img/decor-corner.jpg" alt="" loading="lazy"><div class="stat__body"><span class="pill">لوحات الإلهام</span><b class="num grad" data-count="60" data-suffix="%">60%</b><h3>من مستخدمي Pinterest استخدموه في قرارات شراء الديكور</h3><a href="https://www.socialmediatoday.com/news/pinterest-releases-new-data-on-how-people-use-the-platform-for-home-decor-s/503574" target="_blank" rel="noopener noreferrer">المصدر: Pinterest عبر Social Media Today</a></div></article>
+          <article class="stat tilt"><img src="assets/img/dining.jpg" alt="" loading="lazy"><div class="stat__body"><span class="pill">سرعة الرد</span><b class="num grad" data-count="7" data-suffix="x">7x</b><h3>فرصة أعلى لتأهيل العميل عند الرد خلال ساعة</h3><a href="https://hbr.org/2011/03/the-short-life-of-online-sales-leads" target="_blank" rel="noopener noreferrer">المصدر: Harvard Business Review</a></div></article>
+        </div>
+        <p class="fine center">أرقام عامة من دراسات منشورة عن السوق، وليست نتائج عملاء لـ Magmafy.</p>
+      </div>
+    </section>
+
+    <!-- ============ PROCESS ============ -->
+    <section class="section process" id="process">
+      <div class="wrap process__grid">
+        <div class="process__intro">
+          <p class="eyebrow"><span class="eyebrow__dot"></span>آلية العمل</p>
+          <h2>أربع مراحل واضحة، من <em class="grad">الاستراتيجية إلى الانتشار</em></h2>
+          <p>في كل مرحلة تعرف ما الذي نفعله، وما الذي ستستلمه.</p>
+          <a href="#contact" class="btn btn--grad magnetic">ابدأ من الخطوة الأولى</a>
+        </div>
+        <ol class="steps">
+          <li class="step"><span class="step__n num">01</span><div><h3>نفهم علامتك وجمهورك</h3><p>نراجع منتجاتك وفئتك السعرية ومنافسيك، ونحدد عميلك الحقيقي.</p><p class="step__out"><span>تستلم</span>ملخص الوضع وأهداف قابلة للقياس</p></div></li>
+          <li class="step"><span class="step__n num">02</span><div><h3>نصمم الاستراتيجية وخطة المحتوى</h3><p>المنصات والرسائل وركائز المحتوى، مربوطة بمواسم البيع ومجموعات منتجاتك.</p><p class="step__out"><span>تستلم</span>استراتيجية وتقويم محتوى للاعتماد</p></div></li>
+          <li class="step"><span class="step__n num">03</span><div><h3>ننتج وننشر ونطلق الحملات</h3><p>صور وريلز وستوري بالذكاء الاصطناعي، حملات مدفوعة، ورد يومي على جمهورك.</p><p class="step__out"><span>تستلم</span>محتوى منشور وحملات تعمل</p></div></li>
+          <li class="step"><span class="step__n num">04</span><div><h3>نحلل ونحسّن باستمرار</h3><p>نقيس الاستفسارات والزيارات والطلبات، نكرر ما ينجح ونعدّل ما لا ينجح.</p><p class="step__out"><span>تستلم</span>تقرير شهري وخطة تحسين</p></div></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ PRICING ============ -->
+    <section class="section" id="pricing">
+      <div class="wrap">
+        <div class="head">
+          <p class="eyebrow"><span class="eyebrow__dot"></span>باقاتنا</p>
+          <h2>باقة تُفصَّل على <em class="grad">حجم طموحك</em></h2>
+          <p>أربع باقات تبدأ من دراسة السوق وتصل إلى شراكة كاملة مع موقع ثلاثي الأبعاد. اختر ما يناسب مرحلتك.</p>
+        </div>
+        <div class="plans plans--4">
+          <article class="plan tilt">
+            <span class="plan__kicker">خطوة أولى · مرة واحدة</span>
+            <h3>دراسة السوق</h3><p class="plan__for">لكل من يريد أن يعرف أين يقف قبل أن يصرف على الإعلانات</p>
+            <ul><li>تحليل 5 إلى 10 منافسين مباشرين</li><li>مقارنة الأسعار والعروض والتقسيط</li><li>مراجعة محتواهم وإعلاناتهم النشطة</li><li>اختبار سرعة ردهم كعميل متخفي</li><li>خريطة فرص وخطة 90 يومًا</li></ul>
+            <a href="#contact" class="btn btn--ghost" data-plan="دراسة السوق">احجز اجتماعًا</a>
+          </article>
+          <article class="plan tilt">
+            <span class="plan__kicker">شهري</span>
+            <h3>الانطلاقة</h3><p class="plan__for">لمتاجر ومعارض الأثاث الناشئة</p>
+            <ul><li>إدارة منصتين</li><li>خطة محتوى شهرية مرتبطة بالمواسم</li><li>تصميم منشورات وقصص للمنتجات</li><li>كتابة الكابشن بلهجة سوقك</li><li>تقرير شهري مبسّط</li></ul>
+            <a href="#contact" class="btn btn--ghost" data-plan="باقة الانطلاقة">احجز اجتماعًا</a>
+          </article>
+          <article class="plan plan--hot tilt">
+            <span class="plan__badge">الأكثر طلبًا</span>
+            <span class="plan__kicker">شهري</span>
+            <h3>النمو</h3><p class="plan__for">لمن يريد مضاعفة الاستفسارات وزيارات المعرض</p>
+            <ul><li>كل ما في الانطلاقة، حتى 4 منصات</li><li>صور وريلز وستوري بالذكاء الاصطناعي</li><li>إعلانات كتالوج وزيارة معرض وإعادة استهداف</li><li>صفحة هبوط لكل حملة</li><li>إدارة الرسائل وتحويلها لمواعيد</li><li>تحديث تحليل المنافسين كل 3 أشهر</li></ul>
+            <a href="#contact" class="btn btn--light" data-plan="باقة النمو">احجز اجتماعًا</a>
+          </article>
+          <article class="plan tilt">
+            <span class="plan__kicker">شراكة</span>
+            <h3>الشراكة الكاملة + موقع 3D</h3><p class="plan__for">لمصانع الأثاث وشركات التصميم الداخلي والمعارض الكبيرة</p>
+            <ul><li>كل ما في النمو، على جميع المنصات</li><li>متجر أو معرض ثلاثي الأبعاد لقطعك</li><li>حملات إطلاق للتشكيلات والفروع</li><li>مدير حساب مخصص</li><li>تقارير أسبوعية ودعم أولوية</li></ul>
+            <a href="#contact" class="btn btn--ghost" data-plan="الشراكة الكاملة + موقع 3D">احجز اجتماعًا</a>
+          </article>
+        </div>
+        <div class="addons"><b>إضافات حسب الطلب</b><span>موقع 3D منفصل</span><span>صفحة هبوط</span><span>جلسة صور AI لتشكيلة كاملة</span><span>فيديو جولة في المعرض</span><span>تقرير منافسين ربع سنوي</span></div>
+        <p class="center muted">الأسعار تُحدَّد بعد اجتماع قصير نفهم فيه حجم نشاطك وهدفك، ونرسل لك عرضًا واضحًا خلال 48 ساعة عمل.</p>
+      </div>
+    </section>
+
+    <!-- ============ FAQ ============ -->
+    <section class="section" id="faq">
+      <div class="wrap faq">
+        <div class="faq__intro">
+          <p class="eyebrow"><span class="eyebrow__dot"></span>الأسئلة الشائعة</p>
+          <h2>أجوبة <em class="grad">قبل أن تسأل</em></h2>
+          <p>لم تجد إجابتك؟ اكتب لنا وسنرد عليك في نفس يوم العمل.</p>
+          <a href="#contact" class="btn btn--ghost magnetic">اسألنا مباشرة</a>
+        </div>
+        <div class="faq__list">
+          <details open><summary>متى تظهر النتائج؟<i></i></summary><p>تظهر المؤشرات الأولى (الوصول والتفاعل وحفظ المنشورات) خلال 4 إلى 6 أسابيع. ولأن قرار شراء الأثاث يأخذ وقتًا، تتضح نتائج الاستفسارات والمبيعات عادةً بين الشهر الثالث والسادس.</p></details>
+          <details><summary>ما المنصات التي تديرونها؟<i></i></summary><p>Instagram وTikTok وSnapchat وPinterest وX وFacebook وLinkedIn. نرشّح لك الأنسب: Instagram وPinterest للإلهام، TikTok وSnapchat للوصول السريع، وLinkedIn للأثاث المكتبي.</p></details>
+          <details><summary>كيف تنتجون صور وفيديوهات منتجاتنا؟<i></i></summary><p>نبدأ من صور منتجاتك الحالية، حتى لو كانت من الجوال، ونحوّلها بالذكاء الاصطناعي إلى صور وريلز واقعية داخل ديكورات متنوعة، مع الحفاظ على شكل القطعة وخامتها وألوانها.</p></details>
+          <details><summary>هل تبنون مواقع ثلاثية الأبعاد لمتجري؟<i></i></summary><p>نعم. نبني معارض ومتاجر أونلاين يلفّ فيها العميل القطعة ويغيّر خاماتها وألوانها، مع زر حجز زيارة أو طلب سعر، وتعمل بسلاسة على الجوال.</p></details>
+          <details><summary>هل ميزانية الإعلانات مشمولة في الباقة؟<i></i></summary><p>لا، ميزانية الإعلانات تُدفع مباشرة للمنصات من حسابك الإعلاني، والباقة تغطي التخطيط والإبداع وإدارة الحملات وتحسينها. هكذا تبقى مصاريفك شفافة.</p></details>
+          <details><summary>هل هناك عقد طويل الأمد؟<i></i></summary><p>نبدأ بفترة تجريبية قصيرة ثم نتفق على مدة تناسبك. النتائج هي ما يبقي العميل، لا الالتزام الطويل.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BOOKING ============ -->
+    <section class="section contact" id="contact">
+      <div class="wrap">
+        <div class="head">
+          <p class="eyebrow"><span class="eyebrow__dot"></span>احجز اجتماعك</p>
+          <h2>اختر اليوم والوقت، <em class="grad">ونحن نجهّز الباقي</em></h2>
+          <p>اجتماع مجاني لمدة 30 دقيقة نراجع فيه حساباتك ومنافسيك، ونرسل لك بعدها عرضًا مخصصًا خلال 48 ساعة عمل.</p>
+        </div>
+        <form class="book" id="book" novalidate>
+          <div class="book__steps" aria-hidden="true"><span class="is-on">1 · اليوم</span><span>2 · الوقت</span><span>3 · بياناتك</span></div>
+          <div class="book__grid">
+            <div class="book__cal">
+              <div class="bcal__head">
+                <button type="button" class="bcal__nav" id="bcal-next" aria-label="الشهر التالي">›</button>
+                <b id="bcal-title">نوفمبر 2026</b>
+                <button type="button" class="bcal__nav" id="bcal-prev" aria-label="الشهر السابق">‹</button>
+              </div>
+              <div class="bcal__dow"><span>أحد</span><span>إثنين</span><span>ثلاثاء</span><span>أربعاء</span><span>خميس</span><span>جمعة</span><span>سبت</span></div>
+              <div class="bcal__grid" id="bcal-grid" role="grid" aria-label="اختر يوم الاجتماع"></div>
+              <p class="bcal__tz">المواعيد بتوقيت السعودية (GMT+3) · من الأحد إلى الخميس</p>
+            </div>
+            <div class="book__times">
+              <h3 id="bt-title">اختر يومًا أولًا</h3>
+              <div class="bt__grid" id="bt-grid" role="radiogroup" aria-label="اختر الوقت"></div>
+              <div class="bt__type" role="radiogroup" aria-label="نوع الاجتماع">
+                <button type="button" role="radio" aria-checked="true" data-mt="Google Meet">📹 Google Meet</button>
+                <button type="button" role="radio" aria-checked="false" data-mt="Zoom">💻 Zoom</button>
+                <button type="button" role="radio" aria-checked="false" data-mt="مكالمة هاتفية">📞 مكالمة</button>
+              </div>
+            </div>
+            <div class="book__form">
+              <div class="book__sel" id="book-sel"><span>موعدك</span><b>لم يتم الاختيار بعد</b></div>
+              <label>الاسم<input name="name" required autocomplete="name" placeholder="اسمك الكامل"></label>
+              <label>البريد الإلكتروني<input name="email" type="email" required autocomplete="email" placeholder="you@company.com" dir="ltr"></label>
+              <label>رقم الجوال<input name="phone" type="tel" autocomplete="tel" placeholder="+966 5X XXX XXXX" dir="ltr"></label>
+              <label>اسم النشاط والدولة<input name="biz" required placeholder="مثال: دار ليفينج · الرياض"></label>
+              <label>موضوع الاجتماع
+                <select name="topic" id="book-topic">
+                  <option>استشارة عامة</option><option>دراسة السوق</option><option>باقة الانطلاقة</option><option>باقة النمو</option><option>الشراكة الكاملة + موقع 3D</option><option>موقع 3D فقط</option>
+                </select>
+              </label>
+              <button type="submit" class="btn btn--grad btn--block" id="book-submit">أكّد الموعد</button>
+              <p class="form__note" id="book-note" role="status"></p>
+            </div>
+          </div>
+          <div class="book__done" id="book-done" hidden>
+            <span class="form__done-icon">✓</span>
+            <h3>تم حجز موعدك</h3>
+            <p id="book-done-text"></p>
+            <div class="book__done-actions">
+              <a class="btn btn--grad" id="book-gcal" target="_blank" rel="noopener noreferrer">أضف إلى Google Calendar</a>
+              <a class="btn btn--ghost" id="book-ics" download="magmafy-meeting.ics">تنزيل ملف التقويم</a>
+            </div>
+            <button type="button" class="linkbtn" id="book-again">حجز موعد آخر</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__big" aria-hidden="true">Magmafy</div>
+    <div class="wrap footer__grid">
+      <div class="footer__brand">
+        <a href="#home" class="logo" aria-label="Magmafy">
+          <svg class="logo__mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="12" fill="url(#lg-m)"/><path d="M10 28V13.5c0-1.2 1.5-1.8 2.3-.9L20 21l7.7-8.4c.8-.9 2.3-.3 2.3.9V28" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="30" r="2.2" fill="#fff"/></svg>
+          <span class="logo__word">Magmafy</span>
+        </a>
+        <p>وكالة نمو عبر السوشيال ميديا متخصصة في الأثاث والديكور. نحوّل المتابعين إلى زوّار وعملاء.</p>
+      </div>
+      <div><h4>روابط سريعة</h4><ul><li><a href="#services">خدماتنا</a></li><li><a href="#journey">رحلة عميل</a></li><li><a href="#sites3d">مواقع 3D</a></li><li><a href="#pricing">باقاتنا</a></li><li><a href="#faq">الأسئلة</a></li></ul></div>
+      <div><h4>تواصل معنا</h4><ul><li><a href="mailto:hello@magmafy.com">hello@magmafy.com</a></li><li dir="ltr">+966 5X XXX XXXX</li></ul></div>
+      <div><h4>تابعنا</h4><ul class="footer__social"><li>Instagram</li><li>TikTok</li><li>LinkedIn</li></ul></div>
+    </div>
+    <div class="wrap footer__bottom">
+      <p>© <span class="num">2026</span> Magmafy. جميع الحقوق محفوظة.</p>
+      <ul><li><a href="#home">سياسة الخصوصية</a></li><li><a href="#home">الشروط والأحكام</a></li></ul>
+    </div>
+    <p class="footer__made" dir="ltr">Made by Magmafy</p>
+  </footer>
+
+  <a href="#contact" class="fab">📅 احجز اجتماع</a>
+</body>
+</html>

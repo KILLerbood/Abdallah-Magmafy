@@ -4,6 +4,7 @@
 // Either way the visitor gets a Google Calendar link and an .ics file for the slot.
 import { h, t, str, icon, settings, getLang, safeUrl } from './core.js';
 import { socialLinks } from './layout.js';
+import { crmEndpoint, crmPost, crmBusySlots, getUtm, getReferrer, getReadiness } from './crm.js';
 
 const arr = (v) => (Array.isArray(v) ? v : []);
 const SLOTS = ['10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'];
@@ -35,8 +36,14 @@ function localTime(d, slot) {
   const utc = slotToUTC(d, slot);
   return new Intl.DateTimeFormat(getLang() === 'ar' ? 'ar-u-nu-latn' : 'en-GB', { hour: 'numeric', minute: '2-digit' }).format(utc);
 }
-// Deterministic "already booked" slots so the calendar feels real without a server.
-const busy = (d, slot) => ((d.getDate() * 7 + SLOTS.indexOf(slot) * 3 + d.getMonth()) % 9) === 0;
+// Busy slots: real ones from Magmafy OS (sheet + team calendar) when it is connected.
+// Without it, a deterministic pattern keeps the demo calendar looking lived-in.
+let realBusy = null;
+const busy = (d, slot) => {
+  if (realBusy) return realBusy.has(slotToUTC(d, slot).toISOString());
+  if (crmEndpoint()) return false; // connected but not loaded yet: the server re-checks every booking
+  return ((d.getDate() * 7 + SLOTS.indexOf(slot) * 3 + d.getMonth()) % 9) === 0;
+};
 
 export function bookingPage() {
   const b = t('booking') || {};
@@ -223,8 +230,8 @@ export function bookingPage() {
     const brand = settings.brand || 'Magmafy';
     const platform = st.platform === 'zoom' ? 'Zoom' : 'Google Meet';
     const when = whenText();
-    const subject = ('[' + brand + '] ' + b.mailSubject + ': ' + typeTitle() + ' · ' + when).replace(/[\r\n]+/g, ' ');
     const start = slotToUTC(st.day, st.slot), end = new Date(start.getTime() + DURATION * 60000);
+    const subject = ('[' + brand + '] ' + b.mailSubject + ': ' + typeTitle() + ' · ' + when).replace(/[\r\n]+/g, ' ');
     const details = [typeTitle(), when, platform, data.name, data.business].join('\n');
     const lines = [
       [b.fields.type, typeTitle()], [b.fields.when, when], [b.fields.platform, platform],
@@ -236,29 +243,46 @@ export function bookingPage() {
     const key = clean(cfg.accessKey);
     const endpoint = safeUrl(cfg.endpoint);
     let sent = false;
-    const isGAS = /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(endpoint);
-    if ((key || isGAS) && endpoint.startsWith('https://')) {
+    let meetLink = '';
+    if (crmEndpoint()) {
+      submit.disabled = true;
+      status.textContent = b.sending;
+      const out = await crmPost('booking', {
+        name: data.name, email: data.email, phone: data.phone, business: data.business, link: data.link, notes: data.notes,
+        topic: st.type, meeting_type: typeTitle(), meeting_platform: platform, meeting_time_riyadh: when,
+        meeting_start_utc: start.toISOString(), language: getLang(), utm: getUtm(), referrer: getReferrer(),
+        page: location.pathname, readiness: getReadiness(), website: data.website || ''
+      });
+      submit.disabled = false;
+      if (out.ok) {
+        sent = true;
+        meetLink = /^https:\/\/meet\.google\.com\//.test(str(out.meetLink)) ? out.meetLink : '';
+      } else if (out.error === 'slot_taken' || out.error === 'bad_slot') {
+        status.textContent = (b.errors && b.errors.slotTaken) || b.errors.slot;
+        st.slot = null;
+        const fresh = await crmBusySlots();
+        if (fresh) realBusy = fresh;
+        if (realBusy) realBusy.add(start.toISOString());
+        drawCal(); drawTimes(); update();
+        times.querySelector('button:not([disabled])')?.focus();
+        return;
+      }
+    }
+    if (!sent && key && endpoint.startsWith('https://') && !crmEndpoint()) {
       submit.disabled = true;
       status.textContent = b.sending;
       try {
-        const payload = {
-          subject, from_name: data.name, name: data.name, email: data.email, phone: data.phone,
-          business: data.business, link: data.link, meeting_type: typeTitle(), meeting_platform: platform,
-          meeting_time_riyadh: when, meeting_start_utc: start.toISOString(), notes: data.notes, language: getLang()
-        };
-        let res;
-        if (isGAS) {
-          // Google Apps Script: form-encoded body = "simple" request (no CORS preflight); readable as e.parameter.
-          res = await fetch(endpoint, { method: 'POST', body: new URLSearchParams(payload), redirect: 'follow' });
-        } else {
-          res = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-            body: JSON.stringify(Object.assign({ access_key: key }, payload))
-          });
-        }
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            access_key: key, subject, from_name: data.name, name: data.name, email: data.email, phone: data.phone,
+            business: data.business, link: data.link, meeting_type: typeTitle(), meeting_platform: platform,
+            meeting_time_riyadh: when, meeting_start_utc: start.toISOString(), notes: data.notes, language: getLang()
+          })
+        });
         const out = await res.json().catch(() => ({}));
-        if (!res.ok || out.success === false || out.result === 'error' || out.status === 'error') throw new Error('send failed');
+        if (!res.ok || out.success === false) throw new Error('send failed');
         sent = true;
       } catch (_) {
         sent = false;
@@ -291,6 +315,7 @@ export function bookingPage() {
       h('p', {}, sent ? b.doneText.replace('{email}', data.email) : b.mailText),
       h('div', { class: 'bk-done__actions' },
         sent ? null : h('a', { class: 'btn btn--primary', href: mailto }, icon('mail', 18), h('span', { class: 'btn__label' }, b.mailCta)),
+        meetLink ? h('a', { class: 'btn btn--primary', href: meetLink, target: '_blank', rel: 'noopener noreferrer' }, icon('video', 18), h('span', { class: 'btn__label' }, b.meetLink || 'Google Meet')) : null,
         h('a', { class: 'btn btn--ghost', href: gcal, target: '_blank', rel: 'noopener noreferrer' }, icon('calendar', 18), h('span', { class: 'btn__label' }, b.gcal)),
         icsLink, again));
     form.hidden = true;
@@ -300,6 +325,12 @@ export function bookingPage() {
   });
 
   drawCal(); drawTimes(); update();
+  crmBusySlots().then((set) => {
+    if (!set) return;
+    realBusy = set;
+    if (st.day && st.slot && busy(st.day, st.slot)) st.slot = null;
+    drawCal(); drawTimes(); update();
+  });
 
   const info = [
     ['emailLabel', 'mail', settings.email, settings.email ? 'mailto:' + settings.email : ''],

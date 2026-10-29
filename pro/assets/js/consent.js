@@ -10,8 +10,9 @@ const KEY = 'mg-consent';
 const VERSION = 1;
 const MAX_AGE = 365 * 24 * 60 * 60 * 1000;
 const CATS = ['necessary', 'statistics', 'marketing'];
-// Categories with services actually in use. Empty today: nothing optional is loaded.
-const IN_USE = { statistics: [], marketing: [] };
+// Categories with services actually in use.
+// statistics: the anonymous growth-readiness result is counted only after opt-in.
+const IN_USE = { statistics: ['Magmafy OS (Google Apps Script)'], marketing: [] };
 
 const listeners = new Set();
 let record = read();

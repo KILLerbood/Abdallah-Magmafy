@@ -4,6 +4,9 @@ import { renderHeader, renderFooter } from './layout.js';
 import { renderPage, pageTitle } from './pages.js';
 import { createWorld } from './world.js';
 import { showBanner, refreshBanner } from './consent.js';
+import { captureUtm } from './crm.js';
+
+captureUtm();
 
 const page = document.body.dataset.page || 'home';
 const reduced = reducedMotion();

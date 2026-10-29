@@ -113,7 +113,7 @@ const LABELS = {
   settings: 'الإعدادات والتواصل', legal: 'بيانات المنشأة', projects: 'مشاريع الأعمال',
   'i18n.ar': 'النصوص · العربية', 'i18n.en': 'النصوص · English',
   brand: 'اسم العلامة', brandSuffix: 'إضافة للاسم', defaultLang: 'اللغة الافتراضية (ar / en)', email: 'البريد الإلكتروني', bookingEmail: 'بريد استلام الحجوزات', phone: 'الجوال', whatsapp: 'واتساب (بالصيغة الدولية 9665…)', address: 'العنوان',
-  social: 'روابط التواصل الاجتماعي (https://…)', form: 'نموذج الحجز', accessKey: 'Web3Forms Access Key', endpoint: 'رابط إرسال النموذج', provider: 'المزود',
+  social: 'روابط التواصل الاجتماعي (https://…)', form: 'نموذج الحجز', accessKey: 'Web3Forms Access Key', endpoint: 'رابط إرسال النموذج (Magmafy OS · Apps Script /exec)', provider: 'المزود',
   name: 'الاسم', company: 'الاسم التجاري', crNumber: 'رقم السجل التجاري', vatNumber: 'الرقم الضريبي (VAT)', street: 'الشارع', zip: 'الرمز البريدي', city: 'المدينة', country: 'الدولة', hosting: 'مزود الاستضافة',
   image: 'الصورة', url: 'الرابط', tags: 'الوسوم', title: 'العنوان', label: 'التسمية', text: 'النص', languages: 'اللغات', demo: 'العرض الحي'
 };
@@ -283,7 +283,7 @@ function editor() {
     for (const p of path) v = v[p];
     main.replaceChildren(...[h('h2', {}, sectionList().find(([k]) => k === key)[1]),
       key === 'legal' ? h('p', { class: 'note' }, 'بيانات المنشأة: الاسم التجاري، رقم السجل التجاري، الرقم الضريبي (إن وجد)، العنوان الوطني والبريد الإلكتروني. تظهر في صفحة الشروط والأحكام.') : null,
-      key === 'settings' ? h('p', { class: 'note' }, 'نموذج الحجز: أنشئ Access Key مجانًا على web3forms.com ببريدك وضعه في الأسفل. بدون المفتاح، يفتح زر الحجز برنامج البريد عند الزائر.') : null,
+      key === 'settings' ? h('p', { class: 'note' }, 'نموذج الحجز: الصق رابط Magmafy OS (رابط Google Apps Script الذي ينتهي بـ /exec) في «رابط إرسال النموذج». الحجوزات تُحفظ في الشيت مباشرة. بدون الرابط، يفتح زر الحجز برنامج البريد عند الزائر.') : null,
       ...(Array.isArray(v) ? [arrayEditor(v, path, key)] : Object.entries(v).map(([k, x]) => fieldFor(x, [...path, k], k)))].filter(Boolean));
     filter();
   };

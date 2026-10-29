@@ -1,6 +1,8 @@
 // Consulting page: the three meeting types, a growth readiness check with a radar chart,
 // an ad-budget leak finder and a 90-day plan. Every result links to booking.
 import { h, icon, L, section, svg } from './kit.js';
+import { getLang } from '../core.js';
+import { saveReadiness, crmPost } from '../crm.js';
 
 const T = {
   demo: { ar: 'تجربة حية · بيانات توضيحية', en: 'Live demo · sample data' },
@@ -119,6 +121,10 @@ function readiness() {
     bar.firstChild.style.setProperty('--w', '100%');
     const score = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length * 100);
     const level = L(c.levels)[Math.min(3, Math.floor(score / 26))];
+    // Keep the result for the booking form and record it (anonymously) in Magmafy OS.
+    const readinessResult = { score, level, answers: vals.slice(), at: Date.now() };
+    saveReadiness(readinessResult);
+    if (window.MGConsent && window.MGConsent.has('statistics')) crmPost('readiness', { readiness: readinessResult, language: getLang() });
     const recs = vals.map((v, i) => [v, i]).sort((a, b) => a[0] - b[0]).slice(0, 3).map(([, i]) => L(c.recs)[i]);
     const restart = h('button', { type: 'button', class: 'btn btn--ghost btn--sm' }, L(c.restart));
     restart.addEventListener('click', () => { vals.length = 0; ask(0); });

@@ -236,21 +236,29 @@ export function bookingPage() {
     const key = clean(cfg.accessKey);
     const endpoint = safeUrl(cfg.endpoint);
     let sent = false;
-    if (key && endpoint.startsWith('https://')) {
+    const isGAS = /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(endpoint);
+    if ((key || isGAS) && endpoint.startsWith('https://')) {
       submit.disabled = true;
       status.textContent = b.sending;
       try {
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({
-            access_key: key, subject, from_name: data.name, name: data.name, email: data.email, phone: data.phone,
-            business: data.business, link: data.link, meeting_type: typeTitle(), meeting_platform: platform,
-            meeting_time_riyadh: when, meeting_start_utc: start.toISOString(), notes: data.notes, language: getLang()
-          })
-        });
+        const payload = {
+          subject, from_name: data.name, name: data.name, email: data.email, phone: data.phone,
+          business: data.business, link: data.link, meeting_type: typeTitle(), meeting_platform: platform,
+          meeting_time_riyadh: when, meeting_start_utc: start.toISOString(), notes: data.notes, language: getLang()
+        };
+        let res;
+        if (isGAS) {
+          // Google Apps Script: form-encoded body = "simple" request (no CORS preflight); readable as e.parameter.
+          res = await fetch(endpoint, { method: 'POST', body: new URLSearchParams(payload), redirect: 'follow' });
+        } else {
+          res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify(Object.assign({ access_key: key }, payload))
+          });
+        }
         const out = await res.json().catch(() => ({}));
-        if (!res.ok || out.success === false) throw new Error('send failed');
+        if (!res.ok || out.success === false || out.result === 'error' || out.status === 'error') throw new Error('send failed');
         sent = true;
       } catch (_) {
         sent = false;

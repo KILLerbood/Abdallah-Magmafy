@@ -25,8 +25,8 @@ window.MG_CONTENT = {
       "en"
     ],
     "form": {
-      "provider": "web3forms",
-      "endpoint": "https://api.web3forms.com/submit",
+      "provider": "google-apps-script",
+      "endpoint": "https://script.google.com/macros/s/AKfycbwHc0b5-Zi0ayYiEyUseqfHg32jiORf8rTRq4MtSYR-pDS_fs09yG-Mn4x9zddQ1i1E/exec",
       "accessKey": ""
     }
   },
